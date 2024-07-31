@@ -9,6 +9,4 @@ import lombok.Setter;
 @Setter
 public class Admin extends User {
 
-    public Admin() {
-    }
 }
