@@ -2,6 +2,8 @@ package com.example.posapplicationapis.dto;
 
 
 
+import com.example.posapplicationapis.dto.ingridient.IngredientDtoResponse;
+
 import java.util.List;
 
 
@@ -12,7 +14,7 @@ public class ProductIngredientDto {
    private double quantity;
 
 
-    private List<IngredientDto> ingredients;
+    private List<IngredientDtoResponse> ingredients;
 
 }
 
