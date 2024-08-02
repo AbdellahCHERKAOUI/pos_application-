@@ -24,6 +24,11 @@ public class ImageService {
                 .get("url")
                 .toString();
     }
-
+    public Cloudinary getCloudinary() {
+        return new Cloudinary(ObjectUtils.asMap(
+                "cloud_name", "name",
+                "api_key", "api_key",
+                "api_secret", "api_secret"));
+    }
 
 }
