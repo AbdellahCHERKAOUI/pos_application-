@@ -1,29 +1,23 @@
-package com.example.posapplicationapis.dto;
+package com.example.posapplicationapis.dto.product;
 
 
 import com.example.posapplicationapis.dto.category.CategoryDtoResponse;
 import com.example.posapplicationapis.dto.productIngredient.ProductIngredientDtoRequest;
 import com.example.posapplicationapis.dto.supplement.SupplementDtoRequest;
+import lombok.Data;
 
 import java.util.List;
+@Data
+public class ProductDtoRequest {
 
-public class ProductDto {
-
-
-    private Long id;
 
     private String name;
-
     private Double salesPrice;
     private Double vipPrice;
     private Double tax;
     private Double price;
-
-
-
-    private CategoryDtoResponse category;
+    private Long categoryId;
     private List<ProductIngredientDtoRequest> ingredients;
-
     private List<SupplementDtoRequest> supplements;
 
 

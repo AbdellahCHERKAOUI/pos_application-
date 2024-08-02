@@ -1,5 +1,6 @@
 package com.example.posapplicationapis.dto;
 
+import com.example.posapplicationapis.dto.product.ProductDtoResponse;
 import com.example.posapplicationapis.entities.Order;
 
 import java.util.List;
@@ -19,6 +20,6 @@ public class OrderItemDto {
     private Double price;
 
 
-    private List<ProductDto> orderedProductDto;
+    private List<ProductDtoResponse> orderedProductDto;
 
 }
