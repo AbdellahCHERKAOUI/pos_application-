@@ -1,13 +1,14 @@
-package com.example.posapplicationapis.services;
+package com.example.posapplicationapis.services.product;
 
 import com.example.posapplicationapis.entities.Image;
 import com.example.posapplicationapis.entities.Product;
+import com.example.posapplicationapis.services.product.ProductService;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
 @Service
-public class ProductServiceImpl implements ProductService{
+public class ProductServiceImpl implements ProductService {
     @Override
     public Product addProduct(Long categoryId, Product product, Image image) throws IOException {
         return null;

@@ -1,4 +1,4 @@
-package com.example.posapplicationapis.services;
+package com.example.posapplicationapis.services.category;
 
 import com.example.posapplicationapis.dto.category.CategoryDtoRequest;
 import com.example.posapplicationapis.entities.Category;
@@ -6,6 +6,7 @@ import com.example.posapplicationapis.entities.Image;
 import com.example.posapplicationapis.repositories.CategoryRepository;
 import com.example.posapplicationapis.repositories.ImageRepository;
 import com.example.posapplicationapis.service.ImageService;
+import com.example.posapplicationapis.services.category.CategoryService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

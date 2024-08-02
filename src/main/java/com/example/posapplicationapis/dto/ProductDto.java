@@ -2,6 +2,8 @@ package com.example.posapplicationapis.dto;
 
 
 import com.example.posapplicationapis.dto.category.CategoryDtoResponse;
+import com.example.posapplicationapis.dto.productIngredient.ProductIngredientDtoRequest;
+import com.example.posapplicationapis.dto.supplement.SupplementDtoRequest;
 
 import java.util.List;
 
@@ -20,9 +22,9 @@ public class ProductDto {
 
 
     private CategoryDtoResponse category;
-    private List<ProductIngredientDto> ingredients;
+    private List<ProductIngredientDtoRequest> ingredients;
 
-    private List<SupplementDto> supplements;
+    private List<SupplementDtoRequest> supplements;
 
 
 }

@@ -26,9 +26,9 @@ public class ImageService {
     }
     public Cloudinary getCloudinary() {
         return new Cloudinary(ObjectUtils.asMap(
-                "cloud_name", "name",
-                "api_key", "api_key",
-                "api_secret", "api_secret"));
+                "cloud_name", "dptgucred",
+                "api_key", "189769338287882",
+                "api_secret", "MaK0roxq1XzxML2McSOos7YZFD8"));
     }
 
 }

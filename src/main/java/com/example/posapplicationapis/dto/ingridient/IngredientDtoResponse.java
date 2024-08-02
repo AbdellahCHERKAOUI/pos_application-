@@ -1,11 +1,12 @@
-package com.example.posapplicationapis.dto;
+package com.example.posapplicationapis.dto.ingridient;
 
 import com.example.posapplicationapis.enums.IngredientUnitType;
 import jakarta.persistence.*;
+import lombok.Data;
 
 
-
-public class IngredientDto {
+@Data
+public class IngredientDtoResponse {
 
 
     private Long id;

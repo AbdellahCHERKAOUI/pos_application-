@@ -1,4 +1,4 @@
-package com.example.posapplicationapis.services;
+package com.example.posapplicationapis.services.product;
 
 import com.example.posapplicationapis.entities.Image;
 import com.example.posapplicationapis.entities.Product;

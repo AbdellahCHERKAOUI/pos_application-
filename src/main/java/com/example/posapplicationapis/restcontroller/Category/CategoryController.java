@@ -3,11 +3,7 @@ package com.example.posapplicationapis.restcontroller.Category;
 
 import com.example.posapplicationapis.dto.category.CategoryDtoRequest;
 import com.example.posapplicationapis.entities.Category;
-import com.example.posapplicationapis.repositories.CategoryRepository;
-import com.example.posapplicationapis.service.ImageService;
-import com.example.posapplicationapis.services.CategoryService;
-import com.example.posapplicationapis.services.CategoryServiceImpl;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.posapplicationapis.services.category.CategoryServiceImpl;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 

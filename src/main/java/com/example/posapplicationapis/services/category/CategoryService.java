@@ -1,4 +1,4 @@
-package com.example.posapplicationapis.services;
+package com.example.posapplicationapis.services.category;
 
 import com.example.posapplicationapis.dto.category.CategoryDtoRequest;
 import com.example.posapplicationapis.entities.Category;
