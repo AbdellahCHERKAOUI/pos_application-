@@ -4,6 +4,7 @@ import com.example.posapplicationapis.dto.ingridient.IngredientDtoRequest;
 import com.example.posapplicationapis.entities.Ingredient;
 import com.example.posapplicationapis.services.ingredient.IngredientService;
 import com.example.posapplicationapis.services.ingredient.IngredientServiceImpl;
+import com.example.posapplicationapis.repositories.IngredientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
