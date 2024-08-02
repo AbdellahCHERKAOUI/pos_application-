@@ -7,10 +7,10 @@ import java.util.List;
 
 @Data
 public class SupplementDtoRequest {
-
+    private String name;
     private double price;
     private int quantity;
-    private List<Long> productIds;
+
 
 }
 

@@ -1,5 +1,6 @@
 package com.example.posapplicationapis.dto;
 
+import com.example.posapplicationapis.dto.menu.MenuDtoResponse;
 import com.example.posapplicationapis.enums.SessionStatus;
 import jakarta.persistence.*;
 
@@ -18,7 +19,7 @@ public class SessionDto {
     private String password;
     @Enumerated
     private SessionStatus sessionStatus;
-     private MenuDto menuDto;
+     private MenuDtoResponse menuDto;
 
 }
 

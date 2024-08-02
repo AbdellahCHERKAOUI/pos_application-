@@ -14,9 +14,8 @@ public class Supplement {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String name;
 
-    @ManyToMany(mappedBy = "supplements")
-    private List<Product> products;
 
     private double price;
 

@@ -22,15 +22,15 @@ public class Product {
     private Double vipPrice;
     private Double tax;
     private Double price;
-    @OneToMany(cascade = CascadeType.REMOVE)
+    @OneToOne(cascade = CascadeType.REMOVE)
     @ToString.Exclude
-    private List<Image> images;
+    private Image image;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @OneToMany( cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany
     private List<ProductIngredient> ingredients;
 
     @ManyToMany

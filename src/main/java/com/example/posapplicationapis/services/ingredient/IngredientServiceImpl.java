@@ -2,15 +2,12 @@ package com.example.posapplicationapis.services.ingredient;
 
 import com.example.posapplicationapis.dto.ingridient.IngredientDtoRequest;
 import com.example.posapplicationapis.entities.Ingredient;
-import com.example.posapplicationapis.enums.IngredientUnitType;
 import com.example.posapplicationapis.repositories.IngredientRepository;
-import com.example.posapplicationapis.services.ingredient.IngredientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class IngredientServiceImpl implements IngredientService {
-
     @Autowired
     private IngredientRepository ingredientRepository;
 

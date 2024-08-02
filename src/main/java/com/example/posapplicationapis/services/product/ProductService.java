@@ -1,29 +1,15 @@
 package com.example.posapplicationapis.services.product;
 
-import com.example.posapplicationapis.entities.Image;
-import com.example.posapplicationapis.entities.Product;
-import org.springframework.stereotype.Service;
-
-
-
-import java.io.IOException;
+import com.example.posapplicationapis.dto.product.ProductDtoRequest;
+import com.example.posapplicationapis.dto.product.ProductDtoResponse;
 import java.util.List;
 
 
 public interface ProductService {
 
-    Product addProduct(Long categoryId, Product product, Image image) throws IOException;
-
-
-    Image saveFile(Image image);
-
-
-    Product updateProduct(Long productId);
-
-
-    String deleteProduct(Long productId);
-
-    Product getProduct(Long productId);
-
-    List<Product> getAllProducts();
+    ProductDtoResponse createProduct(ProductDtoRequest requestDto);
+    List<ProductDtoResponse> getAllProducts();
+    ProductDtoResponse getProduct(Long id);
+    ProductDtoResponse updateProduct(Long id, ProductDtoRequest requestDto);
+    String deleteProduct(Long id);
 }
