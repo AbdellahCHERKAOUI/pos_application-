@@ -1,12 +1,13 @@
-package com.example.posapplicationapis.dto;
+package com.example.posapplicationapis.dto.table;
 
 import com.example.posapplicationapis.enums.TableStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Builder;
+import lombok.Data;
 
-
-public class TableDto {
+@Data
+@Builder
+public class TableDtoResponse {
 
     private Long id;
 
