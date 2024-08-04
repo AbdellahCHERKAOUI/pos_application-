@@ -31,7 +31,8 @@ public class User {
 
     private String password;
 
-    private String image;
+    @OneToOne
+    private Image image;
 
     private Boolean active = true;
     @ManyToMany(fetch = FetchType.LAZY)
