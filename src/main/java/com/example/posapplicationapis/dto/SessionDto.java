@@ -1,6 +1,7 @@
 package com.example.posapplicationapis.dto;
 
 import com.example.posapplicationapis.dto.menu.MenuDtoResponse;
+import com.example.posapplicationapis.dto.user.UserDtoResponse;
 import com.example.posapplicationapis.enums.SessionStatus;
 import jakarta.persistence.*;
 
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 public class SessionDto {
 
     private Long id;
-    private UserDto userDto;
+    private UserDtoResponse userDtoResponse;
 
     private LocalDateTime startTime;
 

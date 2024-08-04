@@ -4,7 +4,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -15,12 +17,10 @@ public class ProductIngredient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-   private double quantity;
-
-    @OneToMany
-    @JoinColumn(name = "ingredient_id")
-    private List<Ingredient> ingredients;
-
-    // Getters and Setters
+    @ElementCollection
+    @CollectionTable(name = "product_ingredient_quantities", joinColumns = @JoinColumn(name = "product_ingredient_id"))
+    @MapKeyJoinColumn(name = "ingredient_id")
+    @Column(name = "quantity")
+    private Map<Ingredient, Double> ingredientQuantities = new HashMap<>();
 }
 

@@ -18,7 +18,7 @@ public class ReservationDto {
 
 
 
-    private CashierDto cashier;
+    private CashierDtoResponse cashier;
 
     private CustomerDto customer;
 

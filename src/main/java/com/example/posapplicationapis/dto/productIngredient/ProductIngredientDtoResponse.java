@@ -4,12 +4,10 @@ import com.example.posapplicationapis.dto.ingridient.IngredientDtoResponse;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
+
 @Data
 public class ProductIngredientDtoResponse {
     private Long id;
-
-    private double quantity;
-
-
-    private List<IngredientDtoResponse> ingredients;
+    private Map<Long, Double> ingredientQuantities;
 }

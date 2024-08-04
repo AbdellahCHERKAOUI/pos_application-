@@ -1,11 +1,16 @@
-package com.example.posapplicationapis.dto;
+package com.example.posapplicationapis.dto.user;
 
+import com.example.posapplicationapis.entities.Image;
 import com.example.posapplicationapis.entities.Role;
+import lombok.Builder;
+import lombok.Data;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class UserDto {
+@Data
+@Builder
+public class UserDtoResponse {
 
 
     private Long id;
@@ -22,11 +27,9 @@ public class UserDto {
 
     private String postalCode;
 
-    private String password;
+    private Image image;
 
-    private String image;
-
-    private Boolean active = true;
+    private Boolean active;
 
     private Set<Role> roles = new HashSet<>();
 
