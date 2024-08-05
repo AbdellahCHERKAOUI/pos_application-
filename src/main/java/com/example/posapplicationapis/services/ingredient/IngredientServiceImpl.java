@@ -16,6 +16,8 @@ public class IngredientServiceImpl implements IngredientService {
         ingredient.setName(ingredientDtoRequest.getName());
         ingredient.setUnitType(ingredientDtoRequest.getUnitType());
 
+
+
         return ingredientRepository.save(ingredient);
     }
 

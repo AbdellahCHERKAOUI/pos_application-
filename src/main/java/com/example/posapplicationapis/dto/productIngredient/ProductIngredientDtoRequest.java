@@ -3,13 +3,11 @@ import lombok.Data;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 
 @Data
 public class ProductIngredientDtoRequest {
-
-   private double quantity;
-
-   private List<Long> ingredientIds;
+   private Map<Long, Double> ingredientQuantities;
 }
 
