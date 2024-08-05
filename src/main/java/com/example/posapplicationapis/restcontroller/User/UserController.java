@@ -1,10 +1,9 @@
-package com.example.posapplicationapis.restcontroller;
+package com.example.posapplicationapis.restcontroller.User;
 
 import com.example.posapplicationapis.dto.user.UserDtoRequest;
 import com.example.posapplicationapis.dto.user.UserDtoResponse;
 import com.example.posapplicationapis.services.user.UserServiceImpl;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
