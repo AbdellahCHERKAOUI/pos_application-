@@ -20,7 +20,7 @@ public class ProductDtoRequest {
     private Double price;
     private Long categoryId;
     //private List<ProductIngredientDtoRequest> ingredients;
-    private List<Long> ingredientIds = new ArrayList<>(); // Initialize the list
-    private List<String> supplementNames = new ArrayList<>(); // Initialize the list
+    private List<Long> ingredientIds ;//= new ArrayList<>(); // Initialize the list
+    private List<String> supplementNames;// = new ArrayList<>(); // Initialize the list
 }
 

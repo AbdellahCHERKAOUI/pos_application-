@@ -31,6 +31,7 @@ public class Product {
     private Category category;
 
     @OneToMany
+
     private List<ProductIngredient> ingredients;
 
     @ManyToMany

@@ -15,7 +15,7 @@ public class ProductDtoResponse {
     private Double vipPrice;
     private Double tax;
     private Double price;
-    private CategoryDtoResponse category;
-    private List<ProductIngredientDtoResponse> productIngredients;
-    private List<SupplementDtoResponse> supplements;
+    private Long categoryId;
+    private List<String> supplementNames;
+    private List<Long> ingredientIds;
 }

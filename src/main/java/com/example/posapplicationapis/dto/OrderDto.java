@@ -1,5 +1,6 @@
 package com.example.posapplicationapis.dto;
 
+import com.example.posapplicationapis.dto.orderItem.OrderItemDtoResponse;
 import com.example.posapplicationapis.dto.user.UserDtoResponse;
 import com.example.posapplicationapis.entities.Customer;
 import com.example.posapplicationapis.enums.OrderStatus;
@@ -31,7 +32,7 @@ public class OrderDto {
     private Customer customer;
 
 
-    private OrderItemDto orderItemDto;
+    private OrderItemDtoResponse orderItemDtoResponse;
 
 }
 

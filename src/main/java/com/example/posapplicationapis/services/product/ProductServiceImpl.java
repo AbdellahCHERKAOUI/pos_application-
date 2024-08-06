@@ -3,6 +3,8 @@ package com.example.posapplicationapis.services.product;
 import com.example.posapplicationapis.dto.product.ProductDtoRequest;
 import com.example.posapplicationapis.dto.product.ProductDtoResponse;
 
+import com.example.posapplicationapis.dto.productIngredient.ProductIngredientDtoResponse;
+import com.example.posapplicationapis.dto.supplement.SupplementDtoResponse;
 import com.example.posapplicationapis.entities.Category;
 import com.example.posapplicationapis.entities.Product;
 import com.example.posapplicationapis.entities.ProductIngredient;
@@ -16,31 +18,68 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class ProductServiceImpl implements ProductService {
-    private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository;
-    private final ProductIngredientRepository productIngredientRepository;
-    private final SupplementRepository supplementRepository;
+    private  ProductRepository productRepository;
+    private  CategoryRepository categoryRepository;
+    private  ProductIngredientRepository productIngredientRepository;
+    private  SupplementRepository supplementRepository;
 
-    @Autowired
     private ModelMapper modelMapper;
 
-    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository, ProductIngredientRepository productIngredientRepository, SupplementRepository supplementRepository) {
+    public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository,
+                              ProductIngredientRepository productIngredientRepository, SupplementRepository supplementRepository
+                               ,ModelMapper modelMapper
+    ) {
         this.productRepository = productRepository;
         this.categoryRepository = categoryRepository;
         this.productIngredientRepository = productIngredientRepository;
         this.supplementRepository = supplementRepository;
+        this.modelMapper=modelMapper;
+
     }
-    @Override
+
+   /* @Override
     public ProductDtoResponse createProduct(ProductDtoRequest requestDto) {
         Product product = modelMapper.map(requestDto, Product.class);
 
-        // Set the category
         product.setCategory(categoryRepository.findById(requestDto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found")));
+
+        List<Supplement> supplements = requestDto.getSupplementNames().stream()
+                .map(name -> supplementRepository.findByName(name)
+                        .orElseThrow(() -> new RuntimeException("Supplement not found: " + name)))
+                .collect(Collectors.toList());
+        product.setSupplements(supplements);
+
+        // Manually map ingredient quantities
+        List<ProductIngredient> productIngredients = requestDto.getIngredientIds().stream()
+                .map(id -> productIngredientRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("ProductIngredient not found: " + id)))
+                .collect(Collectors.toList());
+        product.setIngredients(productIngredients);
+
+        Product savedProduct = productRepository.save(product);
+        return modelMapper.map(savedProduct, ProductDtoResponse.class);
+    }*/
+
+    @Override
+    public ProductDtoResponse createProduct(ProductDtoRequest requestDto) {
+        // Manually map ProductDtoRequest to Product entity
+        Product product = new Product();
+        product.setName(requestDto.getName());
+        product.setSalesPrice(requestDto.getSalesPrice());
+        product.setVipPrice(requestDto.getVipPrice());
+        product.setTax(requestDto.getTax());
+        product.setPrice(requestDto.getPrice());
+
+        // Set the category
+        Category category = categoryRepository.findById(requestDto.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        product.setCategory(category);
 
         // Fetch the supplements by their names
         List<Supplement> supplements = requestDto.getSupplementNames().stream()
@@ -49,6 +88,7 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
         product.setSupplements(supplements);
 
+        // Fetch the product ingredients by their IDs
         List<ProductIngredient> productIngredients = requestDto.getIngredientIds().stream()
                 .map(id -> productIngredientRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("ProductIngredient not found: " + id)))
@@ -57,8 +97,27 @@ public class ProductServiceImpl implements ProductService {
 
         // Save the product
         Product savedProduct = productRepository.save(product);
-        return modelMapper.map(savedProduct, ProductDtoResponse.class);
+
+        // Manually map Product entity to ProductDtoResponse
+        ProductDtoResponse responseDto = new ProductDtoResponse();
+        responseDto.setId(savedProduct.getId());
+        responseDto.setName(savedProduct.getName());
+        responseDto.setSalesPrice(savedProduct.getSalesPrice());
+        responseDto.setVipPrice(savedProduct.getVipPrice());
+        responseDto.setTax(savedProduct.getTax());
+        responseDto.setPrice(savedProduct.getPrice());
+        responseDto.setCategoryId(savedProduct.getCategory().getId());
+        responseDto.setSupplementNames(savedProduct.getSupplements().stream()
+                .map(Supplement::getName)
+                .collect(Collectors.toList()));
+        responseDto.setIngredientIds(savedProduct.getIngredients().stream()
+                .map(ProductIngredient::getId)
+                .collect(Collectors.toList()));
+
+        return responseDto;
     }
+
+
 
     @Override
     public List<ProductDtoResponse> getAllProducts() {
@@ -93,18 +152,18 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(category);
 
         // Fetch ingredients by IDs and set them
-        List<ProductIngredient> ingredients = requestDto.getIngredientIds().stream()
+        /*List<ProductIngredient> ingredients = requestDto.getIngredientIds().stream()
                 .map(id -> productIngredientRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Ingredient not found: " + id)))
                 .collect(Collectors.toList());
-        product.setIngredients(ingredients);
+        product.setIngredients(ingredients);*/
 
         // Fetch supplements by names and set them
-        List<Supplement> supplements = requestDto.getSupplementNames().stream()
+       /* List<Supplement> supplements = requestDto.getSupplementNames().stream()
                 .map(name -> supplementRepository.findByName(name)
                         .orElseThrow(() -> new RuntimeException("Supplement not found: " + name)))
                 .collect(Collectors.toList());
-        product.setSupplements(supplements);
+        product.setSupplements(supplements);*/
 
         // Save the updated product
         Product updatedProduct = productRepository.save(product);
