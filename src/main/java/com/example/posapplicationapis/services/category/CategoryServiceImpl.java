@@ -1,12 +1,12 @@
 package com.example.posapplicationapis.services.category;
 
 import com.example.posapplicationapis.dto.category.CategoryDtoRequest;
+import com.example.posapplicationapis.dto.category.CategoryDtoResponse;
 import com.example.posapplicationapis.entities.Category;
 import com.example.posapplicationapis.entities.Image;
 import com.example.posapplicationapis.repositories.CategoryRepository;
 import com.example.posapplicationapis.repositories.ImageRepository;
 import com.example.posapplicationapis.service.ImageService;
-import com.example.posapplicationapis.services.category.CategoryService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,30 +25,45 @@ public class CategoryServiceImpl implements CategoryService {
         this.imageService = imageService;
     }
 
+    private CategoryDtoResponse mapToDto(Category category) {
+        CategoryDtoResponse dto = new CategoryDtoResponse();
+        dto.setId(category.getId());
+        dto.setName(category.getName());
+        if (category.getImage() != null) {
+            dto.setImageLink(category.getImage().getLink());
+        } else {
+            dto.setImageLink(null);
+        }
+        return dto;
+    }
+
     @Override
-    public Category createCategory(CategoryDtoRequest categoryDtoRequest) {
+    public CategoryDtoResponse createCategory(CategoryDtoRequest categoryDtoRequest) {
         Category category = new Category();
         category.setName(categoryDtoRequest.getName());
-        return categoryRepository.save(category);
+        Category savedCategory = categoryRepository.save(category);
+        return mapToDto(savedCategory);
     }
 
     @Override
-    public List<Category> getAllCategories() {
-        return null;
+    public List<CategoryDtoResponse> getAllCategories() {
+        return List.of();
     }
+
+//    @Override
+//    public List<CategoryDtoResponse> getAllCategories() {
+//        List<Category> categories = categoryRepository.findAll();
+//        return categories.stream().map(this::mapToDto).toList();
+//    }
 
     @Override
-    public Category updateCategory(Long categoryId) {
-        return null;
-    }
-
-
-    public Category updateCategory(Long categoryId, CategoryDtoRequest categoryDtoRequest) {
+    public CategoryDtoResponse updateCategory(Long categoryId, CategoryDtoRequest categoryDtoRequest) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
         category.setName(categoryDtoRequest.getName());
-        return categoryRepository.save(category);
+        Category updatedCategory = categoryRepository.save(category);
+        return mapToDto(updatedCategory);
     }
 
     @Override
@@ -64,7 +79,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public Category addImage(Long categoryId, MultipartFile image) throws IOException {
+    public CategoryDtoResponse addImage(Long categoryId, MultipartFile image) throws IOException {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
 
@@ -79,11 +94,12 @@ public class CategoryServiceImpl implements CategoryService {
         imageRepository.save(image1);
 
         category.setImage(image1);
-        return categoryRepository.save(category);
+        Category updatedCategory = categoryRepository.save(category);
+        return mapToDto(updatedCategory);
     }
 
     @Override
-    public Category updateImage(Long categoryId, MultipartFile image) throws IOException {
+    public CategoryDtoResponse updateImage(Long categoryId, MultipartFile image) throws IOException {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         Image oldImage = category.getImage();
@@ -101,10 +117,7 @@ public class CategoryServiceImpl implements CategoryService {
         imageRepository.save(image1);
 
         category.setImage(image1);
-        return categoryRepository.save(category);
+        Category updatedCategory = categoryRepository.save(category);
+        return mapToDto(updatedCategory);
     }
-
-
-
-
 }
