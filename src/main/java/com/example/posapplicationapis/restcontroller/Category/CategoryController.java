@@ -2,6 +2,7 @@ package com.example.posapplicationapis.restcontroller.Category;
 
 
 import com.example.posapplicationapis.dto.category.CategoryDtoRequest;
+import com.example.posapplicationapis.dto.category.CategoryDtoResponse;
 import com.example.posapplicationapis.entities.Category;
 import com.example.posapplicationapis.services.category.CategoryServiceImpl;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +20,12 @@ public class CategoryController {
     }
 
     @PostMapping("/add-category")
-    private Category addCategory(@RequestBody CategoryDtoRequest categoryDtoRequest){
+    private CategoryDtoResponse addCategory(@RequestBody CategoryDtoRequest categoryDtoRequest){
         return categoryService.createCategory(categoryDtoRequest);
     }
 
     @PutMapping("/{id}/update-category")
-    private Category updateCategory(@PathVariable Long id,@RequestBody CategoryDtoRequest categoryDtoRequest){
+    private CategoryDtoResponse updateCategory(@PathVariable Long id,@RequestBody CategoryDtoRequest categoryDtoRequest){
         return categoryService.updateCategory(id, categoryDtoRequest);
     }
 
@@ -34,12 +35,12 @@ public class CategoryController {
     }
 
     @PostMapping("/{categoryId}/add-category-image")
-    private Category addImageCategory(@PathVariable Long categoryId, @RequestBody MultipartFile image) throws IOException {
+    private CategoryDtoResponse addImageCategory(@PathVariable Long categoryId, @RequestBody MultipartFile image) throws IOException {
         return categoryService.addImage(categoryId,image);
     }
 
     @PostMapping("/{categoryId}/update-category-image")
-    private Category updateImageCategory(@PathVariable Long categoryId, @RequestBody MultipartFile image) throws IOException {
+    private CategoryDtoResponse updateImageCategory(@PathVariable Long categoryId, @RequestBody MultipartFile image) throws IOException {
         return categoryService.updateImage(categoryId,image);
     }
 
