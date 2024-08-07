@@ -27,7 +27,7 @@ public class Session {
     @Enumerated
     private SessionStatus sessionStatus;
     @OneToOne
-     private Menu menu;
+    private Menu menu;
 
     // Getters and Setters
 }

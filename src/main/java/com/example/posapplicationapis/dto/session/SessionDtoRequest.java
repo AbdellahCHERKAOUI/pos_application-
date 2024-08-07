@@ -1,18 +1,15 @@
-package com.example.posapplicationapis.dto;
+package com.example.posapplicationapis.dto.session;
 
 import com.example.posapplicationapis.dto.menu.MenuDtoResponse;
-import com.example.posapplicationapis.dto.user.UserDtoResponse;
 import com.example.posapplicationapis.enums.SessionStatus;
-import jakarta.persistence.*;
-
+import jakarta.persistence.Enumerated;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
-
-public class SessionDto {
-
-    private Long id;
-    private UserDtoResponse userDtoResponse;
+@Data
+public class SessionDtoRequest {
+    private Long userId;
 
     private LocalDateTime startTime;
 
@@ -20,7 +17,5 @@ public class SessionDto {
     private String password;
     @Enumerated
     private SessionStatus sessionStatus;
-     private MenuDtoResponse menuDto;
-
+    private Long menuId;
 }
-
