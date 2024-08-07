@@ -1,12 +1,14 @@
-package com.example.posapplicationapis.dto;
+package com.example.posapplicationapis.dto.customer;
 
 import com.example.posapplicationapis.enums.Remise;
 import com.example.posapplicationapis.enums.TarifSpecial;
 import jakarta.persistence.*;
+import lombok.Data;
 
 
-public class CustomerDto {
-    private long id;
+@Data
+public class CustomerDtoResponse {
+    private Long id;
     private String name;
     @Enumerated(EnumType.STRING)
     private TarifSpecial tarifSpecial;

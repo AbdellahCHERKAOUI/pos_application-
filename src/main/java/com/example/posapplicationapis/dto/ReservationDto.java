@@ -1,4 +1,5 @@
 package com.example.posapplicationapis.dto;
+import com.example.posapplicationapis.dto.customer.CustomerDtoResponse;
 import jakarta.persistence.*;
 
 
@@ -20,7 +21,7 @@ public class ReservationDto {
 
     private CashierDtoResponse cashier;
 
-    private CustomerDto customer;
+    private CustomerDtoResponse customer;
 
 
     private List<Table> tables;
