@@ -5,10 +5,7 @@ import com.example.posapplicationapis.dto.product.ProductDtoResponse;
 
 import com.example.posapplicationapis.dto.productIngredient.ProductIngredientDtoResponse;
 import com.example.posapplicationapis.dto.supplement.SupplementDtoResponse;
-import com.example.posapplicationapis.entities.Category;
-import com.example.posapplicationapis.entities.Product;
-import com.example.posapplicationapis.entities.ProductIngredient;
-import com.example.posapplicationapis.entities.Supplement;
+import com.example.posapplicationapis.entities.*;
 import com.example.posapplicationapis.repositories.CategoryRepository;
 import com.example.posapplicationapis.repositories.ProductIngredientRepository;
 import com.example.posapplicationapis.repositories.ProductRepository;
@@ -75,6 +72,8 @@ public class ProductServiceImpl implements ProductService {
         product.setVipPrice(requestDto.getVipPrice());
         product.setTax(requestDto.getTax());
         product.setPrice(requestDto.getPrice());
+
+
 
         // Set the category
         Category category = categoryRepository.findById(requestDto.getCategoryId())

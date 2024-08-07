@@ -29,7 +29,7 @@ public class OrderDto {
 
     private UserDtoResponse userDtoResponse;
 
-    private Customer customer;
+    //private Customer customer;
 
 
     private OrderItemDtoResponse orderItemDtoResponse;
