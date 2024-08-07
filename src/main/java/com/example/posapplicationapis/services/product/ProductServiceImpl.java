@@ -152,18 +152,18 @@ public class ProductServiceImpl implements ProductService {
         product.setCategory(category);
 
         // Fetch ingredients by IDs and set them
-        /*List<ProductIngredient> ingredients = requestDto.getIngredientIds().stream()
+        List<ProductIngredient> ingredients = requestDto.getIngredientIds().stream()
                 .map(id -> productIngredientRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Ingredient not found: " + id)))
                 .collect(Collectors.toList());
-        product.setIngredients(ingredients);*/
+        product.setIngredients(ingredients);
 
         // Fetch supplements by names and set them
-       /* List<Supplement> supplements = requestDto.getSupplementNames().stream()
+        List<Supplement> supplements = requestDto.getSupplementNames().stream()
                 .map(name -> supplementRepository.findByName(name)
                         .orElseThrow(() -> new RuntimeException("Supplement not found: " + name)))
                 .collect(Collectors.toList());
-        product.setSupplements(supplements);*/
+        product.setSupplements(supplements);
 
         // Save the updated product
         Product updatedProduct = productRepository.save(product);
