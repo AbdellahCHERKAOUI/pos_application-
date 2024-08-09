@@ -32,7 +32,6 @@ public class OrderItemController {
     public List<OrderItemDtoResponse> getAllOrderItems() {
         return orderItemService.getAllOrderItems();
     }
-
     @PutMapping("/update-order-item/{id}")
     public OrderItemDtoResponse updateOrderItem(@PathVariable Long id, @RequestBody OrderItemDtoRequest requestDto) {
         return orderItemService.updateOrderItem(id, requestDto);

@@ -6,6 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -21,14 +22,13 @@ public class OrderItem {
     private Order order;
 
 
-    private Integer quantity;
 
     private Double price;
 
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "product_quantity", joinColumns = @JoinColumn(name = "order_item_id"))
+    @MapKeyJoinColumn(name = "product_id")
+    @Column(name = "quantity")
     @ToString.Exclude
-    private List<Product> orderedProduct;
-
-    // Getters and Setters
+    private Map<Product, Integer> orderedProduct;
 }

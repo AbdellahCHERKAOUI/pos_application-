@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,28 +35,30 @@ public class OrderServiceImpl implements OrderService{
     }
 
 
-   @Override
-   public OrderDtoResponse createOrder(OrderDtoRequest orderDtoRequest) {
-       Order order = new Order();
-       order.setDate(orderDtoRequest.getDate());
-       order.setReceiptNumber(orderDtoRequest.getReceiptNumber());
-       order.setStatus(orderDtoRequest.getStatus());
+    @Override
+    public OrderDtoResponse createOrder(OrderDtoRequest orderDtoRequest) {
+        Order order = new Order();
+        order.setDate(orderDtoRequest.getDate());
+        order.setReceiptNumber(orderDtoRequest.getReceiptNumber());
+        order.setStatus(orderDtoRequest.getStatus());
 
-       order.setUser(userRepository.findById(orderDtoRequest.getUserId())
-               .orElseThrow(() -> new RuntimeException("User not found")));
 
-       OrderItem orderItem = orderItemsRepository.findById(orderDtoRequest.getOrderItemId())
-               .orElseThrow(() -> new RuntimeException("OrderItem not found"));
+        // Find and set the user
+        order.setUser(userRepository.findById(orderDtoRequest.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found")));
 
-       // Set order item and calculate total
-       order.setOrderItem(orderItem);
-       double total = orderItem.getPrice() * orderItem.getQuantity();
-       order.setTotal(total);
+        // Find the OrderItem
+        OrderItem orderItem = orderItemsRepository.findById(orderDtoRequest.getOrderItemId())
+                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
 
-       Order savedOrder = orderRepository.save(order);
+        // Set order item and calculate total
+        order.setOrderItem(orderItem);
+        order.setTotal(orderItem.getPrice());
 
-       return mapToDto(savedOrder);
-   }
+        Order savedOrder = orderRepository.save(order);
+
+        return mapToDto(savedOrder);
+    }
 
     private OrderDtoResponse mapToDto(Order order) {
         OrderDtoResponse orderDtoResponse = new OrderDtoResponse();
@@ -70,7 +73,35 @@ public class OrderServiceImpl implements OrderService{
         if (order.getOrderItem() != null) {
             OrderItemDtoResponse orderItemDto = new OrderItemDtoResponse();
             orderItemDto.setId(order.getOrderItem().getId());
-            orderItemDto.setQuantity(order.getOrderItem().getQuantity());
+            orderItemDto.setPrice(order.getOrderItem().getPrice());
+
+            // Convert Map<Product, Integer> to Map<Long, Integer> for productIds
+            Map<Long, Integer> productIds = order.getOrderItem().getOrderedProduct().entrySet().stream()
+                    .collect(Collectors.toMap(
+                            entry -> entry.getKey().getId(),  // Product ID
+                            Map.Entry::getValue               // Quantity
+                    ));
+            orderItemDto.setProductIds(productIds);
+            orderDtoResponse.setOrderItem(orderItemDto);
+        }
+
+        return orderDtoResponse;
+    }
+
+ /*   private OrderDtoResponse mapToDto(Order order) {
+        OrderDtoResponse orderDtoResponse = new OrderDtoResponse();
+        orderDtoResponse.setId(order.getId());
+        orderDtoResponse.setDate(order.getDate());
+        orderDtoResponse.setReceiptNumber(order.getReceiptNumber());
+        orderDtoResponse.setTotal(order.getTotal());
+        orderDtoResponse.setStatus(order.getStatus());
+        orderDtoResponse.setUserId(order.getUser().getId());
+        orderDtoResponse.setCustomerId(order.getCustomer() != null ? order.getCustomer().getId() : null);
+
+        if (order.getOrderItem() != null) {
+            OrderItemDtoResponse orderItemDto = new OrderItemDtoResponse();
+            orderItemDto.setId(order.getOrderItem().getId());
+            //orderItemDto.setQuantity(order.getOrderItem().getQuantity());
             orderItemDto.setPrice(order.getOrderItem().getPrice());
             orderItemDto.setProductIds(order.getOrderItem().getOrderedProduct().stream()
                     .map(product -> product.getId())
@@ -79,7 +110,8 @@ public class OrderServiceImpl implements OrderService{
         }
 
         return orderDtoResponse;
-    }
+    }*/
+
     @Override
     public OrderDtoResponse getOrder(Long id) {
         Order order = orderRepository.findById(id)
