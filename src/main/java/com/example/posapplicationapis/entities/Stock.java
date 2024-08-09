@@ -20,7 +20,7 @@ public class Stock {
             joinColumns = @JoinColumn(name = "stock_id"))
     @MapKeyJoinColumn(name = "ingredient_id")
     @Column(name = "quantity")
-    private Map<Ingredient, Double> ingredientMap;
+    private Map<Ingredient, Double> ingredientStockMap;
 
     // Getters and Setters
 }

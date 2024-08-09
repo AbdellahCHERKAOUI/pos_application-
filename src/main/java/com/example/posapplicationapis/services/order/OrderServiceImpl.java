@@ -5,6 +5,8 @@ import com.example.posapplicationapis.dto.order.OrderDtoResponse;
 import com.example.posapplicationapis.dto.orderItem.OrderItemDtoResponse;
 import com.example.posapplicationapis.entities.Order;
 import com.example.posapplicationapis.entities.OrderItem;
+import com.example.posapplicationapis.entities.ProductIngredient;
+import com.example.posapplicationapis.entities.User;
 import com.example.posapplicationapis.repositories.OrderItemsRepository;
 import com.example.posapplicationapis.repositories.OrderRepository;
 import com.example.posapplicationapis.repositories.PaymentRepository;
@@ -37,80 +39,18 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     public OrderDtoResponse createOrder(OrderDtoRequest orderDtoRequest) {
-        Order order = new Order();
-        order.setDate(orderDtoRequest.getDate());
-        order.setReceiptNumber(orderDtoRequest.getReceiptNumber());
-        order.setStatus(orderDtoRequest.getStatus());
+        // Convert DTO to Entity
+        Order order = toEntity(orderDtoRequest);
 
-
-        // Find and set the user
-        order.setUser(userRepository.findById(orderDtoRequest.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found")));
-
-        // Find the OrderItem
-        OrderItem orderItem = orderItemsRepository.findById(orderDtoRequest.getOrderItemId())
-                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
-
-        // Set order item and calculate total
-        order.setOrderItem(orderItem);
-        order.setTotal(orderItem.getPrice());
-
+        // Save the order to the database
         Order savedOrder = orderRepository.save(order);
 
+        // Map the saved order to DTO and return
         return mapToDto(savedOrder);
     }
 
-    private OrderDtoResponse mapToDto(Order order) {
-        OrderDtoResponse orderDtoResponse = new OrderDtoResponse();
-        orderDtoResponse.setId(order.getId());
-        orderDtoResponse.setDate(order.getDate());
-        orderDtoResponse.setReceiptNumber(order.getReceiptNumber());
-        orderDtoResponse.setTotal(order.getTotal());
-        orderDtoResponse.setStatus(order.getStatus());
-        orderDtoResponse.setUserId(order.getUser().getId());
-        orderDtoResponse.setCustomerId(order.getCustomer() != null ? order.getCustomer().getId() : null);
 
-        if (order.getOrderItem() != null) {
-            OrderItemDtoResponse orderItemDto = new OrderItemDtoResponse();
-            orderItemDto.setId(order.getOrderItem().getId());
-            orderItemDto.setPrice(order.getOrderItem().getPrice());
 
-            // Convert Map<Product, Integer> to Map<Long, Integer> for productIds
-            Map<Long, Integer> productIds = order.getOrderItem().getOrderedProduct().entrySet().stream()
-                    .collect(Collectors.toMap(
-                            entry -> entry.getKey().getId(),  // Product ID
-                            Map.Entry::getValue               // Quantity
-                    ));
-            orderItemDto.setProductIds(productIds);
-            orderDtoResponse.setOrderItem(orderItemDto);
-        }
-
-        return orderDtoResponse;
-    }
-
- /*   private OrderDtoResponse mapToDto(Order order) {
-        OrderDtoResponse orderDtoResponse = new OrderDtoResponse();
-        orderDtoResponse.setId(order.getId());
-        orderDtoResponse.setDate(order.getDate());
-        orderDtoResponse.setReceiptNumber(order.getReceiptNumber());
-        orderDtoResponse.setTotal(order.getTotal());
-        orderDtoResponse.setStatus(order.getStatus());
-        orderDtoResponse.setUserId(order.getUser().getId());
-        orderDtoResponse.setCustomerId(order.getCustomer() != null ? order.getCustomer().getId() : null);
-
-        if (order.getOrderItem() != null) {
-            OrderItemDtoResponse orderItemDto = new OrderItemDtoResponse();
-            orderItemDto.setId(order.getOrderItem().getId());
-            //orderItemDto.setQuantity(order.getOrderItem().getQuantity());
-            orderItemDto.setPrice(order.getOrderItem().getPrice());
-            orderItemDto.setProductIds(order.getOrderItem().getOrderedProduct().stream()
-                    .map(product -> product.getId())
-                    .collect(Collectors.toList()));
-            orderDtoResponse.setOrderItem(orderItemDto);
-        }
-
-        return orderDtoResponse;
-    }*/
 
     @Override
     public OrderDtoResponse getOrder(Long id) {
@@ -155,4 +95,56 @@ public class OrderServiceImpl implements OrderService{
         orderRepository.delete(order);
         return "order deleted successfully";
     }
+    private OrderDtoResponse mapToDto(Order order) {
+        OrderDtoResponse orderDtoResponse = new OrderDtoResponse();
+        orderDtoResponse.setId(order.getId());
+        orderDtoResponse.setDate(order.getDate());
+        orderDtoResponse.setReceiptNumber(order.getReceiptNumber());
+        orderDtoResponse.setTotal(order.getTotal());
+        orderDtoResponse.setStatus(order.getStatus());
+        orderDtoResponse.setUserId(order.getUser().getId());
+        orderDtoResponse.setCustomerId(order.getCustomer() != null ? order.getCustomer().getId() : null);
+
+        if (order.getOrderItem() != null) {
+            OrderItemDtoResponse orderItemDto = new OrderItemDtoResponse();
+            orderItemDto.setId(order.getOrderItem().getId());
+            orderItemDto.setPrice(order.getOrderItem().getPrice());
+
+            // Convert Map<Product, Integer> to Map<Long, Integer> for productIds
+            Map<Long, Integer> productIds = order.getOrderItem().getOrderedProduct().entrySet().stream()
+                    .collect(Collectors.toMap(
+                            entry -> entry.getKey().getId(),  // Product ID
+                            Map.Entry::getValue               // Quantity
+                    ));
+            orderItemDto.setProductIds(productIds);
+            orderDtoResponse.setOrderItem(orderItemDto);
+        }
+
+        return orderDtoResponse;
+    }
+    public Order toEntity(OrderDtoRequest orderDtoRequest) {
+        // Create a new Order entity
+        Order order = new Order();
+
+        // Map simple fields
+        order.setDate(orderDtoRequest.getDate());
+        order.setReceiptNumber(orderDtoRequest.getReceiptNumber());
+        order.setStatus(orderDtoRequest.getStatus());
+
+        // Find and set the User entity
+        User user = userRepository.findById(orderDtoRequest.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        order.setUser(user);
+
+        // Find and set the OrderItem entity
+        OrderItem orderItem = orderItemsRepository.findById(orderDtoRequest.getOrderItemId())
+                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
+        order.setOrderItem(orderItem);
+
+        // Calculate and set the total order price
+        order.setTotal(orderItem.getPrice());
+
+        return order;
+    }
+
 }
