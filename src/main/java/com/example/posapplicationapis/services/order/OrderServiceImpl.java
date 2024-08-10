@@ -3,17 +3,13 @@ package com.example.posapplicationapis.services.order;
 import com.example.posapplicationapis.dto.order.OrderDtoRequest;
 import com.example.posapplicationapis.dto.order.OrderDtoResponse;
 import com.example.posapplicationapis.dto.orderItem.OrderItemDtoResponse;
-import com.example.posapplicationapis.entities.Order;
-import com.example.posapplicationapis.entities.OrderItem;
-import com.example.posapplicationapis.entities.ProductIngredient;
-import com.example.posapplicationapis.entities.User;
-import com.example.posapplicationapis.repositories.OrderItemsRepository;
-import com.example.posapplicationapis.repositories.OrderRepository;
-import com.example.posapplicationapis.repositories.PaymentRepository;
-import com.example.posapplicationapis.repositories.UserRepository;
+import com.example.posapplicationapis.entities.*;
+import com.example.posapplicationapis.repositories.*;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,20 +17,22 @@ import java.util.stream.Collectors;
 @Service
 public class OrderServiceImpl implements OrderService{
 
+    @Autowired
     private UserRepository userRepository;
+    @Autowired
     private PaymentRepository paymentRepository;
+    @Autowired
     private OrderItemsRepository orderItemsRepository;
+    @Autowired
     private ModelMapper modelMapper;
+    @Autowired
     private OrderRepository orderRepository;
-
-    public OrderServiceImpl(UserRepository userRepository, PaymentRepository paymentRepository, OrderItemsRepository orderItemsRepository,
-                            ModelMapper modelMapper,OrderRepository orderRepository) {
-        this.userRepository = userRepository;
-        this.paymentRepository = paymentRepository;
-        this.orderItemsRepository = orderItemsRepository;
-        this.modelMapper = modelMapper;
-        this.orderRepository=orderRepository;
-    }
+    @Autowired
+    private StockRepository stockRepository;
+    @Autowired
+    private OrderItemsRepository orderItemRepository;
+    @Autowired
+    private IngredientRepository ingredientRepository;
 
 
     @Override
@@ -42,12 +40,80 @@ public class OrderServiceImpl implements OrderService{
         // Convert DTO to Entity
         Order order = toEntity(orderDtoRequest);
 
+        // Fetch OrderItem using the provided ID
+        OrderItem orderItem = orderItemRepository.findById(orderDtoRequest.getOrderItemId())
+                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
+
+        // Map to store total quantities of each ingredient needed for the order
+        Map<Long, Double> totalIngredientQuantities = new HashMap<>();
+
+        // Iterate over each product in the order
+        for (Map.Entry<Product, Integer> entry : orderItem.getOrderedProduct().entrySet()) {
+            Product product = entry.getKey();
+            int orderedProductQuantity = entry.getValue();
+
+            // Retrieve product ingredients and calculate total quantities needed
+            for (ProductIngredient productIngredient : product.getIngredients()) {
+                for (Map.Entry<Ingredient, Double> ingredientEntry : productIngredient.getIngredientQuantities().entrySet()) {
+                    Ingredient ingredient = ingredientEntry.getKey();
+                    double ingredientQuantity = ingredientEntry.getValue();
+
+                    // Calculate total quantity needed for this ingredient
+                    double totalQuantity = orderedProductQuantity * ingredientQuantity;
+
+                    // Update the map with this ingredient's total quantity
+                    totalIngredientQuantities.merge(ingredient.getId(), totalQuantity, Double::sum);
+                }
+            }
+        }
+
+        // Update stock quantities
+        for (Map.Entry<Long, Double> ingredientEntry : totalIngredientQuantities.entrySet()) {
+            Long ingredientId = ingredientEntry.getKey();
+            double requiredQuantity = ingredientEntry.getValue();
+
+            // Fetch the stock for this ingredient
+            Stock stock = stockRepository.findByIngredientId(ingredientId)
+                    .orElseThrow(() -> new RuntimeException("Stock not found for ingredient ID " + ingredientId));
+
+            // Retrieve the current quantity in stock
+            Double currentQuantityInStock = null;
+            Ingredient matchingIngredient = null;
+
+            for (Map.Entry<Ingredient, Double> stockEntry : stock.getIngredientStockMap().entrySet()) {
+                if (stockEntry.getKey().getId().equals(ingredientId)) {
+                    currentQuantityInStock = stockEntry.getValue();
+                    matchingIngredient = stockEntry.getKey(); // Save the matching ingredient
+                    break;
+                }
+            }
+
+            // Check if the currentQuantityInStock is null
+            if (currentQuantityInStock == null) {
+                throw new IllegalArgumentException("Stock quantity for ingredient ID " + ingredientId + " is null");
+            }
+
+            // Subtract the required quantity from the stock
+            if (currentQuantityInStock - requiredQuantity >= 0){
+                double updatedQuantity = currentQuantityInStock - requiredQuantity;
+                stock.getIngredientStockMap().put(matchingIngredient, updatedQuantity);
+            }else {
+                throw new IllegalArgumentException("Stock quantity for ingredient ID " + ingredientId + " is insufficient");
+            }
+
+            // Update the stock
+
+            stockRepository.save(stock);
+        }
+
         // Save the order to the database
         Order savedOrder = orderRepository.save(order);
 
         // Map the saved order to DTO and return
         return mapToDto(savedOrder);
     }
+
+
 
 
 
