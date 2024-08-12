@@ -44,4 +44,10 @@ public class OrderController {
         return ResponseEntity.ok(message);
     }
 
+    @PutMapping("/choose-payment-method/{id}")
+    public String choosePaymentMethod(@PathVariable Long id, @RequestParam("method") String paymentMethod) {
+        return orderService.choosePaymentMethod(id, paymentMethod);
+    }
+
+
 }

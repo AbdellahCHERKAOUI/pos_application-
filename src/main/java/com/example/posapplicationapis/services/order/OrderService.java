@@ -15,4 +15,6 @@ public interface OrderService {
     OrderDtoResponse updateOrder(Long id, OrderDtoRequest orderDtoRequest);
 
     String deleteOrder(Long id);
+
+    String choosePaymentMethod(Long id, String paymentMethod);
 }

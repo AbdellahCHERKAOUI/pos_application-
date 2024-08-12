@@ -4,6 +4,8 @@ import com.example.posapplicationapis.dto.order.OrderDtoRequest;
 import com.example.posapplicationapis.dto.order.OrderDtoResponse;
 import com.example.posapplicationapis.dto.orderItem.OrderItemDtoResponse;
 import com.example.posapplicationapis.entities.*;
+import com.example.posapplicationapis.enums.OrderStatus;
+import com.example.posapplicationapis.enums.PaymentMethod;
 import com.example.posapplicationapis.repositories.*;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -161,6 +163,25 @@ public class OrderServiceImpl implements OrderService{
         orderRepository.delete(order);
         return "order deleted successfully";
     }
+
+    @Override
+    public String choosePaymentMethod(Long id, String paymentMethod) {
+        Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+
+
+        Payment payment = new Payment();
+        payment.setPaymentMethod(PaymentMethod.valueOf(paymentMethod.toUpperCase()));
+        paymentRepository.save(payment);
+
+        order.setPayment(payment);
+        order.setStatus(OrderStatus.POSTED);
+
+        orderRepository.save(order);
+
+
+        return order.getPayment().getPaymentMethod().toString();
+    }
+
     private OrderDtoResponse mapToDto(Order order) {
         OrderDtoResponse orderDtoResponse = new OrderDtoResponse();
         orderDtoResponse.setId(order.getId());
