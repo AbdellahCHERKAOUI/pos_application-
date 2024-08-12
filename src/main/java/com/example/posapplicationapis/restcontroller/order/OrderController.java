@@ -49,5 +49,10 @@ public class OrderController {
         return orderService.choosePaymentMethod(id, paymentMethod);
     }
 
+    @PutMapping("{orderId}/discount/{customerId}")
+    public String chooseDiscount(@PathVariable Long orderId,@PathVariable Long customerId) {
+        return orderService.chooseDiscount(orderId, customerId);
+    }
+
 
 }

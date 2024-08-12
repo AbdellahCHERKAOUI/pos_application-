@@ -17,4 +17,6 @@ public interface OrderService {
     String deleteOrder(Long id);
 
     String choosePaymentMethod(Long id, String paymentMethod);
+
+    String chooseDiscount(Long orderId, Long customerId);
 }

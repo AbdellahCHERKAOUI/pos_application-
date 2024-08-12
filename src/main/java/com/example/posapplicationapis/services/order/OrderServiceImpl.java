@@ -35,6 +35,8 @@ public class OrderServiceImpl implements OrderService{
     private OrderItemsRepository orderItemRepository;
     @Autowired
     private IngredientRepository ingredientRepository;
+    @Autowired
+    private CustomerRepository customerRepository;
 
 
     @Override
@@ -180,6 +182,24 @@ public class OrderServiceImpl implements OrderService{
 
 
         return order.getPayment().getPaymentMethod().toString();
+    }
+
+    @Override
+    public String chooseDiscount(Long orderId, Long customerId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("Customer not found"));
+        Double total = order.getTotal();
+        switch (customer.getRemise()) {
+            case FIVE_PERCENT:
+                order.setTotal( total- (total*0.05) );
+                break;
+            case TEN_PERCENT:
+                order.setTotal(total - (total*0.10));
+                break;
+        }
+        order.setCustomer(customer);
+        orderRepository.save(order);
+        return customer.getRemise().toString();
     }
 
     private OrderDtoResponse mapToDto(Order order) {
