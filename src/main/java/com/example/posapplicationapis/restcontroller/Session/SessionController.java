@@ -1,5 +1,6 @@
 package com.example.posapplicationapis.restcontroller.Session;
 
+import com.example.posapplicationapis.dto.password.UpdatePasswordDto;
 import com.example.posapplicationapis.dto.session.SessionDtoRequest;
 import com.example.posapplicationapis.dto.session.SessionDtoResponse;
 import com.example.posapplicationapis.services.session.SessionService;
@@ -43,6 +44,12 @@ public class SessionController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSession(@PathVariable Long id) {
         sessionService.deleteSession(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/update-password/{id}")
+    public ResponseEntity<Void> updateSessionPassword(@PathVariable Long id, @RequestBody UpdatePasswordDto updatePasswordDto) {
+        sessionService.updatePassword(id,updatePasswordDto.getNewPassword());
         return ResponseEntity.ok().build();
     }
 }

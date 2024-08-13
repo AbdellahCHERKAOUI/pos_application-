@@ -15,4 +15,5 @@ public interface SessionService {
     SessionDtoResponse updateSession(Long id, SessionDtoRequest sessionDtoRequest);
 
     void deleteSession(Long id);
+    void updatePassword(Long id, String newPassword);
 }
