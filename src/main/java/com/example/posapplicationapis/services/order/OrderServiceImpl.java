@@ -7,6 +7,7 @@ import com.example.posapplicationapis.entities.*;
 import com.example.posapplicationapis.enums.OrderStatus;
 import com.example.posapplicationapis.enums.PaymentMethod;
 import com.example.posapplicationapis.repositories.*;
+import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -140,6 +141,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
+    @Transactional
     public OrderDtoResponse updateOrder(Long id, OrderDtoRequest orderDtoRequest) {
         // Find the existing order by ID
         Order order = orderRepository.findById(id)
@@ -148,20 +150,158 @@ public class OrderServiceImpl implements OrderService{
         // Update order details from the request DTO
         order.setDate(orderDtoRequest.getDate());
         order.setReceiptNumber(orderDtoRequest.getReceiptNumber());
-        order.setTotal(orderDtoRequest.getTotal());
         order.setStatus(orderDtoRequest.getStatus());
 
         // Fetch the user and set it in the order
         order.setUser(userRepository.findById(orderDtoRequest.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found")));
 
-        order.setOrderItem(orderItemsRepository.findById(orderDtoRequest.getOrderItemId())
-                .orElseThrow(() -> new RuntimeException("OrderItem not found")));
+        // Fetch the order item
+        OrderItem orderItem = orderItemsRepository.findById(orderDtoRequest.getOrderItemId())
+                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
 
+        // Update the product quantities in the order item and adjust the stock
+        updateOrderItemAndStock(orderItem, orderDtoRequest.getProductQuantities());
+
+        // Update the order with the updated order item
+        order.setOrderItem(orderItem);
+
+        // Recalculate the total price based on the updated order item
+        order.setTotal(orderItem.getPrice());
+
+        // Save the updated order
         Order updatedOrder = orderRepository.save(order);
 
         return mapToDto(updatedOrder);
     }
+
+    private void updateOrderItemAndStock(OrderItem orderItem, Map<Long, Integer> updatedProductQuantities) {
+        Map<Product, Integer> currentProductQuantities = orderItem.getOrderedProduct();
+
+        // Calculate the difference between the new and old quantities
+        Map<Long, Integer> quantityDifference = new HashMap<>();
+        for (Map.Entry<Long, Integer> entry : updatedProductQuantities.entrySet()) {
+            Long productId = entry.getKey();
+            int newQuantity = entry.getValue();
+            int oldQuantity = currentProductQuantities.entrySet().stream()
+                    .filter(e -> e.getKey().getId().equals(productId))
+                    .findFirst()
+                    .map(Map.Entry::getValue)
+                    .orElse(0);
+
+            quantityDifference.put(productId, newQuantity - oldQuantity);
+        }
+
+        // Update stock based on the quantity difference
+        adjustStockBasedOnQuantityDifference(quantityDifference);
+
+        // Update the order item with the new product quantities
+        for (Map.Entry<Long, Integer> entry : updatedProductQuantities.entrySet()) {
+            Long productId = entry.getKey();
+            int newQuantity = entry.getValue();
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
+            currentProductQuantities.put(product, newQuantity);
+        }
+
+        // Recalculate the total price for the order item
+        double totalPrice = currentProductQuantities.entrySet().stream()
+                .mapToDouble(entry -> entry.getKey().getPrice() * entry.getValue())
+                .sum();
+        orderItem.setPrice(totalPrice);
+    }
+
+    private void adjustStockBasedOnQuantityDifference(Map<Long, Integer> quantityDifference) {
+        for (Map.Entry<Long, Integer> entry : quantityDifference.entrySet()) {
+            Long productId = entry.getKey();
+            int quantityDiff = entry.getValue();
+
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found: " + productId));
+
+            for (ProductIngredient productIngredient : product.getIngredients()) {
+                for (Map.Entry<Ingredient, Double> ingredientEntry : productIngredient.getIngredientQuantities().entrySet()) {
+                    Ingredient ingredient = ingredientEntry.getKey();
+                    double ingredientQuantity = ingredientEntry.getValue();
+
+                    double totalIngredientQuantityChange = quantityDiff * ingredientQuantity;
+
+                    // Adjust the stock for the ingredient
+                    Stock stock = stockRepository.findByIngredientId(ingredient.getId())
+                            .orElseThrow(() -> new RuntimeException("Stock not found for ingredient ID " + ingredient.getId()));
+
+                    double currentStockQuantity = stock.getIngredientStockMap().getOrDefault(ingredient, 0.0);
+                    double updatedStockQuantity = currentStockQuantity - totalIngredientQuantityChange;
+
+                    if (updatedStockQuantity < 0) {
+                        throw new IllegalArgumentException("Insufficient stock for ingredient: " + ingredient.getName());
+                    }
+
+                    stock.getIngredientStockMap().put(ingredient, updatedStockQuantity);
+                    stockRepository.save(stock);
+                }
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+    @Transactional
+    @Override
+    public OrderDtoResponse removeProductsFromOrder(Long orderId, List<Long> productIds) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        OrderItem orderItem = order.getOrderItem();
+        Map<Product, Integer> orderedProducts = orderItem.getOrderedProduct();
+
+        for (Long productId : productIds) {
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new RuntimeException("Product not found"));
+
+            // Adjust stock for the removed product
+            adjustStockForProductRemoval(product, orderedProducts.get(product));
+
+            // Remove the product from the order
+            orderedProducts.remove(product);
+        }
+
+        // Update the total price
+        double newTotal = orderedProducts.entrySet().stream()
+                .mapToDouble(e -> e.getKey().getPrice() * e.getValue())
+                .sum();
+        order.setTotal(newTotal);
+
+        // Save the updated order
+        Order updatedOrder = orderRepository.save(order);
+
+        return mapToDto(updatedOrder);
+    }
+    private void adjustStockForProductRemoval(Product product, int quantityToRemove) {
+        for (ProductIngredient productIngredient : product.getIngredients()) {
+            for (Map.Entry<Ingredient, Double> ingredientEntry : productIngredient.getIngredientQuantities().entrySet()) {
+                Ingredient ingredient = ingredientEntry.getKey();
+                double ingredientQuantity = ingredientEntry.getValue();
+
+                double totalIngredientQuantityChange = quantityToRemove * ingredientQuantity;
+
+                Stock stock = stockRepository.findByIngredientId(ingredient.getId())
+                        .orElseThrow(() -> new RuntimeException("Stock not found for ingredient ID " + ingredient.getId()));
+
+                double currentStockQuantity = stock.getIngredientStockMap().getOrDefault(ingredient, 0.0);
+                double updatedStockQuantity = currentStockQuantity + totalIngredientQuantityChange;
+
+                stock.getIngredientStockMap().put(ingredient, updatedStockQuantity);
+                stockRepository.save(stock);
+            }
+        }
+    }
+
 
     @Override
     public String deleteOrder(Long id) {
@@ -210,112 +350,9 @@ public class OrderServiceImpl implements OrderService{
 
 
 
-   /* @Transactional
-    @Override
-    public OrderItemDtoResponse updateOrderItemInOrder(Long id, OrderItemDtoRequest request) {
-        OrderItem orderItem = orderItemsRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
 
-        // Store the old product quantities
-        Map<Product, Integer> oldProductQuantities = new HashMap<>(orderItem.getOrderedProduct());
 
-        Map<Product, Integer> newProductQuantities = new HashMap<>();
-        double totalPrice = 0.0;
 
-        // Update the ordered products and calculate the total price
-        for (Map.Entry<Long, Integer> entry : request.getProductIds().entrySet()) {
-            Product product = productRepository.findById(entry.getKey())
-                    .orElseThrow(() -> new RuntimeException("Product not found: " + entry.getKey()));
-            int newQuantity = entry.getValue();
-            newProductQuantities.put(product, newQuantity);
-            totalPrice += product.getPrice() * newQuantity; // Calculate the total price
-        }
-
-        // Adjust the stock levels based on the difference between old and new quantities
-        for (Map.Entry<Product, Integer> entry : newProductQuantities.entrySet()) {
-            Product product = entry.getKey();
-            int newQuantity = entry.getValue();
-            int oldQuantity = oldProductQuantities.getOrDefault(product, 0);
-
-            int quantityDifference = newQuantity - oldQuantity;
-
-            if (quantityDifference != 0) {
-                // Update stock for the product ingredients
-                for (ProductIngredient productIngredient : product.getIngredients()) {
-                    for (Map.Entry<Ingredient, Double> ingredientEntry : productIngredient.getIngredientQuantities().entrySet()) {
-                        Ingredient ingredient = ingredientEntry.getKey();
-                        double ingredientQuantity = ingredientEntry.getValue();
-
-                        // Calculate the quantity change needed for the stock
-                        double stockChange = quantityDifference * ingredientQuantity;
-
-                        // Fetch the stock for this ingredient
-                        Stock stock = stockRepository.findByIngredientId(ingredient.getId())
-                                .orElseThrow(() -> new RuntimeException("Stock not found for ingredient ID " + ingredient.getId()));
-
-                        // Update the stock level
-                        Double currentQuantityInStock = stock.getIngredientStockMap().get(ingredient);
-
-                        if (currentQuantityInStock == null) {
-                            throw new IllegalArgumentException("Stock quantity for ingredient ID " + ingredient.getId() + " is null");
-                        }
-
-                        if (currentQuantityInStock - stockChange < 0) {
-                            throw new IllegalArgumentException("Insufficient stock for ingredient ID " + ingredient.getId());
-                        }
-
-                        // Update the stock with the new quantity
-                        stock.getIngredientStockMap().put(ingredient, currentQuantityInStock - stockChange);
-                        stockRepository.save(stock);
-                    }
-                }
-            }
-        }
-
-        // Update the order item with new products and price
-        orderItem.setOrderedProduct(newProductQuantities);
-        orderItem.setPrice(totalPrice);
-
-        // Save the updated orderItem
-        OrderItem updatedOrderItem = orderItemsRepository.save(orderItem);
-
-        // Map the updated orderItem to the response DTO
-        return toDto(updatedOrderItem);
-    }
-    @Override
-    @Transactional
-    public OrderDtoResponse updateOrderByOrderItem(Long id, OrderDtoRequest orderDtoRequest) {
-        Order order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
-
-        order.setDate(orderDtoRequest.getDate());
-        order.setReceiptNumber(orderDtoRequest.getReceiptNumber());
-        order.setTotal(orderDtoRequest.getTotal());
-        order.setStatus(orderDtoRequest.getStatus());
-
-        // Update user
-        order.setUser(userRepository.findById(orderDtoRequest.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not found")));
-
-        // Update OrderItem (and adjust stock levels accordingly)
-        OrderItemDtoRequest orderItemDtoRequest = new OrderItemDtoRequest();
-        orderItemDtoRequest.setProductIds(orderDtoRequest.getOrderItemProductIds()); // Assuming this is provided in the DTO
-
-        OrderItemDtoResponse updatedOrderItem = updateOrderItemInOrder(orderDtoRequest.getOrderItemId(), orderItemDtoRequest);
-
-        // Update the order with the updated OrderItem
-        order.setOrderItem(orderItemsRepository.findById(updatedOrderItem.getId())
-                .orElseThrow(() -> new RuntimeException("OrderItem not found")));
-
-        // Recalculate the total price based on the updated OrderItem
-        order.setTotal(updatedOrderItem.getPrice());
-
-        Order updatedOrder = orderRepository.save(order);
-
-        return mapToDto(updatedOrder);
-    }
-
-*/
 
 
     private OrderDtoResponse mapToDto(Order order) {
@@ -333,11 +370,10 @@ public class OrderServiceImpl implements OrderService{
             orderItemDto.setId(order.getOrderItem().getId());
             orderItemDto.setPrice(order.getOrderItem().getPrice());
 
-            // Convert Map<Product, Integer> to Map<Long, Integer> for productIds
             Map<Long, Integer> productIds = order.getOrderItem().getOrderedProduct().entrySet().stream()
                     .collect(Collectors.toMap(
-                            entry -> entry.getKey().getId(),  // Product ID
-                            Map.Entry::getValue               // Quantity
+                            entry -> entry.getKey().getId(),
+                            Map.Entry::getValue
                     ));
             orderItemDto.setProductIds(productIds);
             orderDtoResponse.setOrderItem(orderItemDto);
@@ -345,26 +381,21 @@ public class OrderServiceImpl implements OrderService{
 
         return orderDtoResponse;
     }
-    public Order toEntity(OrderDtoRequest orderDtoRequest) {
-        // Create a new Order entity
-        Order order = new Order();
 
-        // Map simple fields
+    public Order toEntity(OrderDtoRequest orderDtoRequest) {
+        Order order = new Order();
         order.setDate(orderDtoRequest.getDate());
         order.setReceiptNumber(orderDtoRequest.getReceiptNumber());
         order.setStatus(orderDtoRequest.getStatus());
 
-        // Find and set the User entity
         User user = userRepository.findById(orderDtoRequest.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         order.setUser(user);
 
-        // Find and set the OrderItem entity
         OrderItem orderItem = orderItemsRepository.findById(orderDtoRequest.getOrderItemId())
                 .orElseThrow(() -> new RuntimeException("OrderItem not found"));
         order.setOrderItem(orderItem);
 
-        // Calculate and set the total order price
         order.setTotal(orderItem.getPrice());
 
         return order;
