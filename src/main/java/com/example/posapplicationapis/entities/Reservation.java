@@ -15,16 +15,13 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "table_id")
-    private Table table;
     private LocalDateTime date;
 
 
 
     @ManyToOne
     @JoinColumn(name = "cashier_id")
-    private Cashier cashier;
+    private User cashier;
     @ManyToOne
     @JoinColumn(name = "customer_id")
     private Customer customer;

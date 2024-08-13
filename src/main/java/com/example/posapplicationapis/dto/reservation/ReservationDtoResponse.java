@@ -1,4 +1,5 @@
-package com.example.posapplicationapis.dto;
+package com.example.posapplicationapis.dto.reservation;
+import com.example.posapplicationapis.dto.CashierDtoResponse;
 import com.example.posapplicationapis.dto.customer.CustomerDtoResponse;
 import jakarta.persistence.*;
 
@@ -7,13 +8,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
-public class ReservationDto {
+public class ReservationDtoResponse {
 
 
     private Long id;
-
-
-    private Table table;
     private LocalDateTime date;
 
 
@@ -24,7 +22,7 @@ public class ReservationDto {
     private CustomerDtoResponse customer;
 
 
-    private List<Table> tables;
+    private List<Long> tables;
 
 
 
