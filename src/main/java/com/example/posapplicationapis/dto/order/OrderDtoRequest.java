@@ -4,6 +4,8 @@ import com.example.posapplicationapis.enums.OrderStatus;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.Map;
+
 @Data
 public class OrderDtoRequest {
     private LocalDateTime date;
@@ -14,4 +16,7 @@ public class OrderDtoRequest {
     private Long userId;
     private Long customerId;
     private Long orderItemId;
+
+
+
 }
