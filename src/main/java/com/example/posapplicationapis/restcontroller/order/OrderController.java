@@ -1,5 +1,6 @@
 package com.example.posapplicationapis.restcontroller.order;
 
+import com.example.posapplicationapis.dto.ProductIdsDto;
 import com.example.posapplicationapis.dto.order.OrderDtoRequest;
 import com.example.posapplicationapis.dto.order.OrderDtoResponse;
 import com.example.posapplicationapis.services.order.OrderService;
@@ -53,6 +54,16 @@ public class OrderController {
     public String chooseDiscount(@PathVariable Long orderId,@PathVariable Long customerId) {
         return orderService.chooseDiscount(orderId, customerId);
     }
-
+   /* @PutMapping("/update-order-quantity/{id}")
+    public OrderDtoResponse updateOrderQuantity(@PathVariable Long id, @RequestBody OrderDtoRequest orderDtoRequest) {
+        return orderService.updateOrderByOrderItem(id, orderDtoRequest);
+    }*/
+   @PutMapping(value = "/{id}/remove-products")
+   public ResponseEntity<OrderDtoResponse> removeProductsFromOrder(
+           @PathVariable Long id,
+           @RequestBody ProductIdsDto productIds) {
+       OrderDtoResponse updatedOrder = orderService.removeProductsFromOrder(id, productIds.getProductIds());
+       return ResponseEntity.ok(updatedOrder);
+   }
 
 }
