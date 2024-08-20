@@ -16,6 +16,8 @@ public class IngredientDtoResponse {
     @Enumerated(EnumType.STRING)
     private IngredientUnitType unitType;
 
+    private Double quantity;
+
     // Getters and Setters
 }
 

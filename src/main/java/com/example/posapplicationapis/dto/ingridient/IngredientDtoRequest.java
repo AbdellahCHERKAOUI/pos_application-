@@ -11,4 +11,6 @@ public class IngredientDtoRequest {
 
     @Enumerated(EnumType.STRING)
     private IngredientUnitType unitType;
+
+    private Double quantity;
 }

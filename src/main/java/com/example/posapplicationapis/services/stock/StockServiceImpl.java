@@ -9,6 +9,7 @@ import com.example.posapplicationapis.repositories.StockRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -42,10 +43,66 @@ public class StockServiceImpl implements StockService{
     }*/
     @Override
     public StockDtoResponse createStock(StockDtoRequest stockDtoRequest) {
+        // Map StockDtoRequest to Stock entity
         Stock stock = mapToEntity(stockDtoRequest);
-        Stock savedStock = stockRepository.save(stock);
+
+        // Retrieve all stocks from the repository
+        List<Stock> stocks = stockRepository.findAll();
+        Stock savedStock;
+
+        if (stocks.isEmpty()) {
+            // If no stocks exist, save the new stock
+            savedStock = stockRepository.save(stock);
+        } else {
+            // If stocks exist, retrieve the first one (assuming you only have one stock to work with)
+            Stock stockWork = stocks.get(0);
+
+            // Convert existing Map<Ingredient, Double> to Map<Long, Double>
+            Map<Long, Double> existingIngredientStockMap = new HashMap<>();
+            for (Map.Entry<Ingredient, Double> entry : stockWork.getIngredientStockMap().entrySet()) {
+                existingIngredientStockMap.put(entry.getKey().getId(), entry.getValue());
+            }
+
+            // Update or add quantities based on the ingredientStockMap from the request
+            for (Map.Entry<Long, Double> entry : stockDtoRequest.getIngredientStockMap().entrySet()) {
+                Long ingredientId = entry.getKey();
+                Double quantity = entry.getValue();
+
+                // Check if the ingredient already exists in the stock
+                if (existingIngredientStockMap.containsKey(ingredientId)) {
+                    // Update the quantity
+                    Double existingQuantity = existingIngredientStockMap.get(ingredientId);
+                    existingIngredientStockMap.put(ingredientId,quantity);
+                } else {
+                    // Add new ingredient with its quantity
+                    existingIngredientStockMap.put(ingredientId, quantity);
+                }
+            }
+
+            // Convert Map<Long, Double> back to Map<Ingredient, Double>
+            Map<Ingredient, Double> updatedIngredientStockMap = new HashMap<>();
+            for (Map.Entry<Long, Double> entry : existingIngredientStockMap.entrySet()) {
+                Ingredient ingredient = findIngredientById(entry.getKey()); // Assume you have a method to find Ingredient by ID
+                updatedIngredientStockMap.put(ingredient, entry.getValue());
+            }
+
+            // Set the updated map back to the stock entity
+            stockWork.setIngredientStockMap(updatedIngredientStockMap);
+
+            // Save the updated stock
+            savedStock = stockRepository.save(stockWork);
+        }
+
+        // Map the saved stock to StockDtoResponse and return it
         return mapToDto(savedStock);
     }
+
+    // Helper method to find Ingredient by ID (implement this as needed)
+    private Ingredient findIngredientById(Long id) {
+        // Implement this method to find and return the Ingredient by its ID
+        return ingredientRepository.findById(id).orElseThrow(() -> new RuntimeException("Ingredient not found"));
+    }
+
 
 
     @Override
