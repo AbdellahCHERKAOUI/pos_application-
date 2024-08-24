@@ -143,4 +143,9 @@ public class CategoryServiceImpl implements CategoryService {
 
         return categoryDtoResponses;
     }
+
+    @Override
+    public CategoryDtoResponse getByName(String name) {
+        return mapToDto(categoryRepository.findByName(name));
+    }
 }

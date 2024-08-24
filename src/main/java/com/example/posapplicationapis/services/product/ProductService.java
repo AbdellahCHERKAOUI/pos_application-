@@ -15,4 +15,6 @@ public interface ProductService {
     ProductDtoResponse getProduct(Long id);
     ProductDtoResponse updateProduct(Long id, ProductDtoRequest requestDto);
     String deleteProduct(Long id);
+
+    ProductDtoResponse addImage(Long id, MultipartFile image) throws IOException;
 }

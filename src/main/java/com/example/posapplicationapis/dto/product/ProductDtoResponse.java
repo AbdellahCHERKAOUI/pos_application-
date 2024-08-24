@@ -1,11 +1,10 @@
 package com.example.posapplicationapis.dto.product;
 
-import com.example.posapplicationapis.dto.category.CategoryDtoResponse;
-import com.example.posapplicationapis.dto.productIngredient.ProductIngredientDtoResponse;
-import com.example.posapplicationapis.dto.supplement.SupplementDtoResponse;
+import com.example.posapplicationapis.entities.Ingredient;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 public class ProductDtoResponse {
@@ -15,7 +14,8 @@ public class ProductDtoResponse {
     private Double vipPrice;
     private Double tax;
     private Double price;
-    private Long categoryId;
+    private String categoryName;
     private List<String> supplementNames;
-    private List<Long> ingredientIds;
+    private Map<String, Double> productIngredients;
+    private String image;
 }
