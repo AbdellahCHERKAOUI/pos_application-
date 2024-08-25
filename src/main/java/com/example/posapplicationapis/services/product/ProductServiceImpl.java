@@ -38,11 +38,7 @@ public class ProductServiceImpl implements ProductService {
         this.imageRepository = imageRepository;
     }
 
-    @Override
-    @Transactional
-    public ProductDtoResponse createProduct() {
-        return createProduct(null);
-    }
+
 
     @Override
     @Transactional
