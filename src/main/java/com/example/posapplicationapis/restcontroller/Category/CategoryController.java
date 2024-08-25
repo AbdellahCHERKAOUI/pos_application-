@@ -50,5 +50,10 @@ public class CategoryController {
         return categoryService.getAll();
     }
 
+    @GetMapping("/get-name")
+    private CategoryDtoResponse getCategoryByName(@RequestParam String name) {
+        return categoryService.getByName(name);
+    }
+
 
 }

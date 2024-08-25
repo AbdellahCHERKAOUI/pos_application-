@@ -1,6 +1,5 @@
 package com.example.posapplicationapis.restcontroller.product;
 
-import com.example.posapplicationapis.dto.category.CategoryDtoResponse;
 import com.example.posapplicationapis.dto.product.ProductDtoRequest;
 import com.example.posapplicationapis.dto.product.ProductDtoResponse;
 import com.example.posapplicationapis.services.product.ProductService;
@@ -41,6 +40,8 @@ public class ProductController {
         ProductDtoResponse responseDto = productService.getProduct(id);
         return ResponseEntity.ok(responseDto);
     }
+
+    @PutMapping("/update-product/{id}")
     public ResponseEntity<ProductDtoResponse> updateProduct(@PathVariable Long id, @RequestBody ProductDtoRequest requestDto) {
         ProductDtoResponse responseDto = productService.updateProduct(id, requestDto);
         return ResponseEntity.ok(responseDto);
@@ -51,8 +52,10 @@ public class ProductController {
         String message = productService.deleteProduct(id);
         return ResponseEntity.ok(message);
     }
-    @PostMapping("/{producId}/add-product-image")
-    private ProductDtoResponse addImageProduct(@PathVariable Long producId, @RequestBody MultipartFile image) throws IOException {
-        return productService.addImage(producId,image);
+
+    @PutMapping("/add-image-product/{id}")
+    public ResponseEntity<ProductDtoResponse> addImageToProduct(@PathVariable Long id, @RequestBody MultipartFile image) throws IOException {
+        ProductDtoResponse responseDto = productService.addImage(id, image);
+        return ResponseEntity.ok(responseDto);
     }
 }

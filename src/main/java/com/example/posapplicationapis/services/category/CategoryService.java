@@ -24,4 +24,6 @@ public interface CategoryService {
     public CategoryDtoResponse updateImage(Long categoryId, MultipartFile image) throws IOException;
 
     List<CategoryDtoResponse> getAll();
+
+    CategoryDtoResponse getByName(String name);
 }

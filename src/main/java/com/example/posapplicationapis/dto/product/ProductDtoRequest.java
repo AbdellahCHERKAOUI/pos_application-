@@ -9,6 +9,8 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+
 @Data
 public class ProductDtoRequest {
 
@@ -19,8 +21,8 @@ public class ProductDtoRequest {
     private Double tax;
     private Double price;
     private Long categoryId;
-    private Long imageId;
-    private List<Long> ingredientIds ;//= new ArrayList<>(); // Initialize the list
+    //private List<ProductIngredientDtoRequest> ingredients;
+    private Map<Long, Double> ingredientAndQuantities ;//= new ArrayList<>(); // Initialize the list
     private List<String> supplementNames;// = new ArrayList<>(); // Initialize the list
 }
 
