@@ -18,4 +18,6 @@ public class ProductDtoResponse {
     private Long categoryId;
     private List<String> supplementNames;
     private List<Long> ingredientIds;
+    private String imageurl;
+
 }

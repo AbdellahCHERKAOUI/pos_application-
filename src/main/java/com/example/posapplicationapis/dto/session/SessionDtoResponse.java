@@ -18,7 +18,9 @@ public class SessionDtoResponse {
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
+/*
     private String password;
+*/
     @Enumerated
     private SessionStatus sessionStatus;
      private MenuDtoResponse menuDto;

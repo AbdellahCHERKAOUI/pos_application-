@@ -11,6 +11,7 @@ import java.util.Set;
 @Builder
 public class UserDtoRequest {
     private String name;
+    private String password;
 
     private String city;
 

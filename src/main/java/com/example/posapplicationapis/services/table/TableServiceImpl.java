@@ -3,7 +3,9 @@ package com.example.posapplicationapis.services.table;
 import com.example.posapplicationapis.dto.table.TableDtoRequest;
 import com.example.posapplicationapis.dto.table.TableDtoResponse;
 import com.example.posapplicationapis.entities.Table;
+import com.example.posapplicationapis.enums.TableStatus;
 import com.example.posapplicationapis.repositories.TableRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -55,6 +57,24 @@ public class TableServiceImpl implements TableService{
 
         tableRepository.delete(table);
     }
+
+    @Override
+    public TableDtoResponse toggleTableStatus(Long tableId) {
+        Table table = tableRepository.findById(tableId)
+                .orElseThrow(() -> new EntityNotFoundException("Table not found with id: " + tableId));
+
+        // Toggle the status
+        if (table.getReserved() == TableStatus.RESERVED) {
+            table.setReserved(TableStatus.AVAILABLE);
+        } else {
+            table.setReserved(TableStatus.RESERVED);
+        }
+
+        // Save the updated table
+        Table updatedTable = tableRepository.save(table);
+        return mapToResponse(updatedTable);
+    }
+
 
     public TableDtoResponse mapToResponse(Table table) {
         return TableDtoResponse.builder()

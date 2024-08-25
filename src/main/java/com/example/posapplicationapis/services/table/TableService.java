@@ -17,6 +17,8 @@ import java.util.List;
 
      void deleteTable(Long id);
 
+     TableDtoResponse toggleTableStatus(Long tableId);
+
      TableDtoResponse mapToResponse(Table table);
 
 }

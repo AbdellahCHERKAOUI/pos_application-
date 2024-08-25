@@ -63,7 +63,6 @@ public class SessionServiceImpl implements SessionService {
         session.setUser(userRepository.findById(sessionDtoRequest.getUserId()).orElseThrow());
         session.setStartTime(sessionDtoRequest.getStartTime());
         session.setEndTime(sessionDtoRequest.getEndTime());
-        session.setPassword(bCryptPasswordEncoder.encode(sessionDtoRequest.getPassword()));
         session.setSessionStatus(sessionDtoRequest.getSessionStatus());
         session.setMenu(menuRepository.findById(sessionDtoRequest.getMenuId()).orElseThrow());
         sessionRepository.save(session);
@@ -78,7 +77,6 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public void updatePassword(Long id, String newPassword) {
         Session session = sessionRepository.findById(id).orElseThrow(()-> new RuntimeException("Session with id " + id + " not found"));
-        session.setPassword(bCryptPasswordEncoder.encode(newPassword));
         sessionRepository.save(session);
     }
 
@@ -88,7 +86,6 @@ public class SessionServiceImpl implements SessionService {
         sessionDto.setUserId(session.getUser().getId());
         sessionDto.setStartTime(session.getStartTime());
         sessionDto.setEndTime(session.getEndTime());
-        sessionDto.setPassword(session.getPassword());
         sessionDto.setSessionStatus(session.getSessionStatus());
         sessionDto.setMenuDto(mapToMenuDto(session.getMenu()));
         return sessionDto;

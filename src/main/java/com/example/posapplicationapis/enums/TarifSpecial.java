@@ -2,7 +2,8 @@ package com.example.posapplicationapis.enums;
 
 public enum TarifSpecial {
     SALES_PRICE,
-    VIP_PRICE
+    VIP_PRICE,
+    DEFAULT_VALUE
 }
 
 

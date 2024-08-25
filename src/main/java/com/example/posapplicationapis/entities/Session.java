@@ -23,7 +23,9 @@ public class Session {
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
+/*
     private String password;
+*/
     @Enumerated
     private SessionStatus sessionStatus;
     @OneToOne

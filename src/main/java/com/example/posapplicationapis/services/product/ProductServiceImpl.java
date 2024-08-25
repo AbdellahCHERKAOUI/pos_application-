@@ -6,10 +6,7 @@ import com.example.posapplicationapis.dto.product.ProductDtoResponse;
 import com.example.posapplicationapis.dto.productIngredient.ProductIngredientDtoResponse;
 import com.example.posapplicationapis.dto.supplement.SupplementDtoResponse;
 import com.example.posapplicationapis.entities.*;
-import com.example.posapplicationapis.repositories.CategoryRepository;
-import com.example.posapplicationapis.repositories.ProductIngredientRepository;
-import com.example.posapplicationapis.repositories.ProductRepository;
-import com.example.posapplicationapis.repositories.SupplementRepository;
+import com.example.posapplicationapis.repositories.*;
 import com.example.posapplicationapis.service.ImageService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +26,8 @@ public class ProductServiceImpl implements ProductService {
     private  SupplementRepository supplementRepository;
     private ImageService imageService;
     private ModelMapper modelMapper;
-
+    @Autowired
+    private ImageRepository imageRepository;
     public ProductServiceImpl(ProductRepository productRepository, CategoryRepository categoryRepository,
                               ProductIngredientRepository productIngredientRepository, SupplementRepository supplementRepository
                                ,ModelMapper modelMapper,ImageService imageService
@@ -45,8 +43,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDtoResponse createProduct(ProductDtoRequest requestDto) {
-        Product product = modelMapper.map(requestDto, Product.class);
-
+        Product product = toEntity(requestDto);
         // Set the category
         Category category = categoryRepository.findById(requestDto.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found"));
@@ -137,6 +134,37 @@ public class ProductServiceImpl implements ProductService {
         productRepository.delete(product);
         return "Product deleted successfully";
     }
+
+    @Override
+    public ProductDtoResponse addImage(Long productId, MultipartFile image) throws IOException {
+        Product product= productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("product not found"));
+
+        String link = imageService.uploadFile(image);
+
+        if (link == null) {
+            throw new RuntimeException("Failed to upload the image, link is null");
+        }
+
+        Image image1 = new Image();
+        image1.setLink(link);
+        imageRepository.save(image1);
+
+        product.setImage(image1);
+        Product updatedProduct = productRepository.save(product);
+        return mapToDto(updatedProduct);
+    }
+
+    @Override
+    public List<ProductDtoResponse> getAllProductsByCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        List<Product>products=productRepository.getAllByCategory(category);
+        return products.stream()
+                .map(this::mapToDto) // Assuming you have a toDto method
+                .collect(Collectors.toList());
+    }
+
     // Mapping from Product entity to ProductDtoResponse
     private ProductDtoResponse mapToDto(Product product) {
         ProductDtoResponse responseDto = modelMapper.map(product, ProductDtoResponse.class);
@@ -147,6 +175,20 @@ public class ProductServiceImpl implements ProductService {
         responseDto.setIngredientIds(product.getIngredients().stream()
                 .map(ProductIngredient::getId)
                 .collect(Collectors.toList()));
+        if (product.getImage() != null) {
+            responseDto.setImageurl(product.getImage().getLink());
+        } else {
+            responseDto.setImageurl(null);
+        }
         return responseDto;
+    }
+    private Product toEntity(ProductDtoRequest requestDto) {
+        Product product = new Product();
+        product.setName(requestDto.getName());
+        product.setSalesPrice(requestDto.getSalesPrice());
+        product.setVipPrice(requestDto.getVipPrice());
+        product.setTax(requestDto.getTax());
+        product.setPrice(requestDto.getPrice());
+        return product;
     }
 }

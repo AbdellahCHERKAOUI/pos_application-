@@ -44,4 +44,9 @@ public class TableController {
         tableServiceImpl.deleteTable(id);
         return ResponseEntity.ok("Table deleted successfully");
     }
+    @PutMapping("/{id}/toggle-status")
+    public ResponseEntity<TableDtoResponse> toggleTableStatus(@PathVariable Long id) {
+        TableDtoResponse response = tableServiceImpl.toggleTableStatus(id);
+        return ResponseEntity.ok(response);
+    }
 }

@@ -19,7 +19,7 @@ public class ProductDtoRequest {
     private Double tax;
     private Double price;
     private Long categoryId;
-    //private List<ProductIngredientDtoRequest> ingredients;
+    private Long imageId;
     private List<Long> ingredientIds ;//= new ArrayList<>(); // Initialize the list
     private List<String> supplementNames;// = new ArrayList<>(); // Initialize the list
 }

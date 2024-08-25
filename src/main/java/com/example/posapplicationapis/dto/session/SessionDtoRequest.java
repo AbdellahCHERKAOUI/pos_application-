@@ -14,7 +14,9 @@ public class SessionDtoRequest {
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
+/*
     private String password;
+*/
     @Enumerated
     private SessionStatus sessionStatus;
     private Long menuId;

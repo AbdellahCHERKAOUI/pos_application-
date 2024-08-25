@@ -77,6 +77,7 @@ public class UserServiceImpl implements UserService {
 
             User user = new User();
             user.setName(signUpRequest.getName());
+            user.setPassword(signUpRequest.getPassword());
             user.setCity(signUpRequest.getCity());
             user.setAddress(signUpRequest.getAddress());
             user.setCountry(signUpRequest.getCountry());
@@ -117,7 +118,7 @@ public class UserServiceImpl implements UserService {
         Set<String> strRoles = userDtoRequest.getRoles();
         Set<Role> roles = new HashSet<>();
 
-
+        // Role assignment logic
         if (strRoles == null || strRoles.isEmpty()) {
             Role defaultRole = roleRepository.findByName(ERole.ROLE_CASHIER)
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
@@ -146,26 +147,30 @@ public class UserServiceImpl implements UserService {
                         roles.add(defaultRole);
                 }
             });
+        }
 
-            User user = userRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        // Retrieve user and update details
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-            user.setName(userDtoRequest.getName());
-            user.setCity(userDtoRequest.getCity());
-            user.setAddress(userDtoRequest.getAddress());
-            user.setCountry(userDtoRequest.getCountry());
-            user.setPhoneNumber(userDtoRequest.getPhoneNumber());
-            user.setPostalCode(userDtoRequest.getPostalCode());
-//        user.setPassword(passwordEncoder.encode(userDtoRequest.getPassword())); // Hashing password
-//        user.setImage(userDtoRequest.getImage());
-            user.setActive(userDtoRequest.getActive());
+        user.setName(userDtoRequest.getName());
+        user.setPassword(userDtoRequest.getPassword());
+        user.setCity(userDtoRequest.getCity());
+        user.setAddress(userDtoRequest.getAddress());
+        user.setCountry(userDtoRequest.getCountry());
+        user.setPhoneNumber(userDtoRequest.getPhoneNumber());
+        user.setPostalCode(userDtoRequest.getPostalCode());
+        // Uncomment if you handle passwords and images
+        // user.setPassword(passwordEncoder.encode(userDtoRequest.getPassword()));
+        // user.setImage(userDtoRequest.getImage());
+        user.setActive(userDtoRequest.getActive());
         user.setRoles(roles);
 
-            User updatedUser = userRepository.save(user);
-            return convertToDto(updatedUser);
-        }
-        return convertToDto(null);
+        // Save and return updated user
+        User updatedUser = userRepository.save(user);
+        return convertToDto(updatedUser);
     }
+
 
     @Override
     @Transactional
@@ -223,15 +228,20 @@ public class UserServiceImpl implements UserService {
 
 
     private UserDtoResponse convertToDto(User user) {
+        if (user == null) {
+            return null;
+        }
         return UserDtoResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
+                .password(user.getPassword())
                 .city(user.getCity())
                 .address(user.getAddress())
                 .country(user.getCountry())
                 .phoneNumber(user.getPhoneNumber())
                 .postalCode(user.getPostalCode())
-//                .password(user.getPassword())
+                // Uncomment if you handle passwords and images
+                // .password(user.getPassword())
                 .image(user.getImage())
                 .active(user.getActive())
                 .roles(user.getRoles())
