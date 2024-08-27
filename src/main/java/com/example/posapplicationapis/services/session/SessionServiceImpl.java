@@ -1,6 +1,7 @@
 package com.example.posapplicationapis.services.session;
 
 import com.example.posapplicationapis.dto.category.CategoryDtoResponse;
+import com.example.posapplicationapis.dto.menu.MenuDtoRequest;
 import com.example.posapplicationapis.dto.menu.MenuDtoResponse;
 import com.example.posapplicationapis.dto.session.SessionDtoRequest;
 import com.example.posapplicationapis.dto.session.SessionDtoResponse;
@@ -11,6 +12,7 @@ import com.example.posapplicationapis.repositories.CategoryRepository;
 import com.example.posapplicationapis.repositories.MenuRepository;
 import com.example.posapplicationapis.repositories.SessionRepository;
 import com.example.posapplicationapis.repositories.UserRepository;
+import com.example.posapplicationapis.services.menu.MenuServiceImpl;
 import com.example.posapplicationapis.services.session.SessionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +20,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,11 +39,35 @@ public class SessionServiceImpl implements SessionService {
 
     @Autowired
     private PasswordEncoder bCryptPasswordEncoder;
+    @Autowired
+    private CategoryRepository categoryRepository;
+    @Autowired
+    private MenuServiceImpl menuService;
 
     @Override
     public SessionDtoResponse createSession(SessionDtoRequest sessionDtoRequest) {
         Session session = new Session();
-        return getSessionDtoResponse(sessionDtoRequest, session);
+        session.setUser(userRepository.findById(sessionDtoRequest.getUserId()).orElseThrow());
+        session.setStartTime(sessionDtoRequest.getStartTime());
+        session.setEndTime(sessionDtoRequest.getEndTime());
+        session.setSessionStatus(sessionDtoRequest.getSessionStatus());
+
+        List<Category> categories = new ArrayList<>();
+        for (Long categoryId : sessionDtoRequest.getCategoryIds()) {
+            Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new RuntimeException("Category not found"));
+            categories.add(category);
+        }
+
+        Menu menu = Menu.builder()
+                .name("--Menu--")
+                .categories(categories)
+                .build();
+        menuRepository.save(menu);
+
+
+        session.setMenu(menu);
+        sessionRepository.save(session);
+        return mapToDto(session);
     }
 
     @Override
@@ -56,15 +84,12 @@ public class SessionServiceImpl implements SessionService {
     @Override
     public SessionDtoResponse updateSession(Long id, SessionDtoRequest sessionDtoRequest) {
         Session session = sessionRepository.findById(id).orElseThrow();
-        return getSessionDtoResponse(sessionDtoRequest, session);
-    }
 
-    private SessionDtoResponse getSessionDtoResponse(SessionDtoRequest sessionDtoRequest, Session session) {
         session.setUser(userRepository.findById(sessionDtoRequest.getUserId()).orElseThrow());
         session.setStartTime(sessionDtoRequest.getStartTime());
         session.setEndTime(sessionDtoRequest.getEndTime());
         session.setSessionStatus(sessionDtoRequest.getSessionStatus());
-        session.setMenu(menuRepository.findById(sessionDtoRequest.getMenuId()).orElseThrow());
+
         sessionRepository.save(session);
         return mapToDto(session);
     }
@@ -95,9 +120,14 @@ public class SessionServiceImpl implements SessionService {
         MenuDtoResponse menuDto = new MenuDtoResponse();
         menuDto.setId(menu.getId());
         menuDto.setName(menu.getName());
-        menuDto.setRestrictedCategories(menu.getRestrictedCategories().stream()
-                .map(this::mapToCategoryDto)
-                .collect(Collectors.toList()));
+
+        List<Category> categories = menu.getCategories();
+        List<CategoryDtoResponse> categoriesDto = new ArrayList<>();
+
+        for (Category category: categories) {
+            categoriesDto.add(mapToCategoryDto(category));
+        }
+        menuDto.setRestrictedCategories(categoriesDto);
         return menuDto;
     }
 

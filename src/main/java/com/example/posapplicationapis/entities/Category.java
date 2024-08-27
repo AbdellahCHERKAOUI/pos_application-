@@ -23,7 +23,7 @@ public class Category {
     @OneToMany(mappedBy = "category", cascade =  CascadeType.ALL )
     private List<Product> products;
 
-    @ManyToMany(mappedBy = "restrictedCategories")
+    @ManyToMany(mappedBy = "categories")
     private List<Menu> menus;
     @OneToOne
     @JoinColumn(name = "category_photo_id")

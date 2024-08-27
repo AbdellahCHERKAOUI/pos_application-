@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class SessionDtoRequest {
@@ -19,5 +20,5 @@ public class SessionDtoRequest {
 */
     @Enumerated
     private SessionStatus sessionStatus;
-    private Long menuId;
+    private List<Long> categoryIds;
 }

@@ -35,7 +35,7 @@ public class MenuServiceImpl implements MenuService {
                 .map(id -> categoryRepository.findById(id)
                         .orElseThrow(() -> new RuntimeException("Category not found: " + id)))
                 .collect(Collectors.toList());
-        menu.setRestrictedCategories(categories);
+        menu.setCategories(categories);
 
         Menu savedMenu = menuRepository.save(menu);
         return modelMapper.map(savedMenu, MenuDtoResponse.class);
@@ -65,7 +65,7 @@ public class MenuServiceImpl implements MenuService {
                 .map(categoryId -> categoryRepository.findById(categoryId)
                         .orElseThrow(() -> new RuntimeException("Category not found: " + categoryId)))
                 .collect(Collectors.toList());
-        menu.setRestrictedCategories(categories);
+        menu.setCategories(categories);
 
         Menu updatedMenu = menuRepository.save(menu);
         return modelMapper.map(updatedMenu, MenuDtoResponse.class);

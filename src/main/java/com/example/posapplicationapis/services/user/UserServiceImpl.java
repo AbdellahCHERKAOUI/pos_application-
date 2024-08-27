@@ -1,5 +1,6 @@
 package com.example.posapplicationapis.services.user;
 
+import com.example.posapplicationapis.dto.user.UserAuthDtoResponse;
 import com.example.posapplicationapis.dto.user.UserDtoRequest;
 import com.example.posapplicationapis.dto.user.UserDtoResponse;
 import com.example.posapplicationapis.entities.Image;
@@ -198,16 +199,31 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public Long authenticateUser(String username, String password) {
+    public UserAuthDtoResponse authenticateUser(String username, String password) {
         User user = userRepository.findByName(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+
+
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid credentials");
         }
 
+        UserAuthDtoResponse userDtoResponse = new UserAuthDtoResponse();
+        userDtoResponse.setId(user.getId());
 
-        return user.getId();
+        for (Role role : user.getRoles()) {
+            if (role.getName().equals(ERole.ROLE_ADMIN)) {
+                userDtoResponse.setAdmin(true);
+            }else if (role.getName().equals(ERole.ROLE_CHEF)) {
+                userDtoResponse.setChef(true);
+            }else if (role.getName().equals(ERole.ROLE_CASHIER)) {
+                userDtoResponse.setCashier(true);
+            }
+        }
+
+
+        return userDtoResponse;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.example.posapplicationapis.restcontroller.User;
 
 import com.example.posapplicationapis.dto.user.UserAuthDto;
+import com.example.posapplicationapis.dto.user.UserAuthDtoResponse;
 import com.example.posapplicationapis.dto.user.UserDtoRequest;
 import com.example.posapplicationapis.dto.user.UserDtoResponse;
 import com.example.posapplicationapis.services.user.UserServiceImpl;
@@ -71,10 +72,10 @@ public class UserController {
         return ResponseEntity.ok(userService.editUserImage(id, image));
     }
     @PostMapping("/authenticate")
-    public ResponseEntity<Long> authenticateUser(@RequestBody UserAuthDto userDtoRequest) {
+    public ResponseEntity<UserAuthDtoResponse> authenticateUser(@RequestBody UserAuthDto userDtoRequest) {
         try {
-            Long userId = userService.authenticateUser(userDtoRequest.getName(), userDtoRequest.getPassword());
-            return ResponseEntity.ok(userId);
+            UserAuthDtoResponse userAuthDtoResponse = userService.authenticateUser(userDtoRequest.getName(), userDtoRequest.getPassword());
+            return ResponseEntity.ok(userAuthDtoResponse);
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).build();
         }
