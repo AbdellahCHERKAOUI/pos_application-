@@ -29,6 +29,12 @@ public class SessionController {
         return ResponseEntity.ok(session);
     }
 
+    @GetMapping("/{userId}/user-id")
+    public ResponseEntity<SessionDtoResponse> getSessionByUserId(@PathVariable Long userId) {
+        SessionDtoResponse session = sessionService.getSessionByUserId(userId);
+        return ResponseEntity.ok(session);
+    }
+
     @GetMapping
     public ResponseEntity<List<SessionDtoResponse>> getAllSessions() {
         List<SessionDtoResponse> sessions = sessionService.getAllSessions();
@@ -41,7 +47,7 @@ public class SessionController {
         return ResponseEntity.ok(updatedSession);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/close/{id}")
     public ResponseEntity<Void> deleteSession(@PathVariable Long id) {
         sessionService.deleteSession(id);
         return ResponseEntity.ok().build();

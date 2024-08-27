@@ -8,6 +8,7 @@ import com.example.posapplicationapis.dto.session.SessionDtoResponse;
 import com.example.posapplicationapis.entities.Category;
 import com.example.posapplicationapis.entities.Menu;
 import com.example.posapplicationapis.entities.Session;
+import com.example.posapplicationapis.entities.User;
 import com.example.posapplicationapis.repositories.CategoryRepository;
 import com.example.posapplicationapis.repositories.MenuRepository;
 import com.example.posapplicationapis.repositories.SessionRepository;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -105,15 +107,39 @@ public class SessionServiceImpl implements SessionService {
         sessionRepository.save(session);
     }
 
+    @Override
+    public SessionDtoResponse getSessionByUserId(Long userId) {
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()){
+            return mapToDto(null);
+        }
+
+        Optional<Session> session = sessionRepository.findByUser(user.get());
+
+        if (session.isEmpty()){
+            return mapToDto(null);
+        }
+
+        if (session.isPresent()) {
+            return mapToDto(session.get());
+        }
+
+
+        return mapToDto(null);
+    }
+
     private SessionDtoResponse mapToDto(Session session) {
         SessionDtoResponse sessionDto = new SessionDtoResponse();
-        sessionDto.setId(session.getId());
-        sessionDto.setUserId(session.getUser().getId());
-        sessionDto.setStartTime(session.getStartTime());
-        sessionDto.setEndTime(session.getEndTime());
-        sessionDto.setSessionStatus(session.getSessionStatus());
-        sessionDto.setMenuDto(mapToMenuDto(session.getMenu()));
-        return sessionDto;
+        if (session != null) {
+            sessionDto.setId(session.getId());
+            sessionDto.setUserId(session.getUser().getId());
+            sessionDto.setStartTime(session.getStartTime());
+            sessionDto.setEndTime(session.getEndTime());
+            sessionDto.setSessionStatus(session.getSessionStatus());
+            sessionDto.setMenuDto(mapToMenuDto(session.getMenu()));
+            return sessionDto;
+        }
+        return null;
     }
 
     private MenuDtoResponse mapToMenuDto(Menu menu) {
@@ -127,7 +153,7 @@ public class SessionServiceImpl implements SessionService {
         for (Category category: categories) {
             categoriesDto.add(mapToCategoryDto(category));
         }
-        menuDto.setRestrictedCategories(categoriesDto);
+        menuDto.setCategories(categoriesDto);
         return menuDto;
     }
 
@@ -135,7 +161,7 @@ public class SessionServiceImpl implements SessionService {
         CategoryDtoResponse categoryDto = new CategoryDtoResponse();
         categoryDto.setId(category.getId());
         categoryDto.setName(category.getName());
-        // Map other fields if necessary
+        categoryDto.setImageLink(category.getImage().getLink());
         return categoryDto;
     }
 }

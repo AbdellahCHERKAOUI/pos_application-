@@ -8,5 +8,5 @@ import java.util.List;
 public class MenuDtoResponse {
     private Long id;
     private String name;
-    private List<CategoryDtoResponse> restrictedCategories;
+    private List<CategoryDtoResponse> categories;
 }

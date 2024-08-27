@@ -16,4 +16,6 @@ public interface SessionService {
 
     void deleteSession(Long id);
     void updatePassword(Long id, String newPassword);
+
+    SessionDtoResponse getSessionByUserId(Long userId);
 }
