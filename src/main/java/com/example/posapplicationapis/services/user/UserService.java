@@ -13,8 +13,8 @@ public interface UserService {
     UserDtoResponse updateUser(Long id, UserDtoRequest userDtoRequest);
     void deleteUser(Long id);
     List<UserDtoResponse> getUsersByRole(String role);
-//    String authenticateUser(String username, String password);
-//    void changeUserPassword(Long id, String newPassword);
+    Long authenticateUser(String username, String password);
+    void changeUserPassword(Long id, String newPassword);
     void activateUser(Long id);
     UserDtoResponse uploadUserImage(Long id, MultipartFile image) throws Exception;
     UserDtoResponse editUserImage(Long id, MultipartFile image) throws Exception;

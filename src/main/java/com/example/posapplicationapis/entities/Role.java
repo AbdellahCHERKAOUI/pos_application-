@@ -17,6 +17,14 @@ public class Role {
     @Column(length = 20)
     private ERole name;
 
+    public Role(ERole roleAdmin) {
+        name = roleAdmin;
+    }
+
+    public Role() {
+
+    }
+
     // Add other fields as necessary
 
     // Getters and Setters

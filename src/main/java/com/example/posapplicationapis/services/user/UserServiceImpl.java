@@ -4,15 +4,19 @@ import com.example.posapplicationapis.dto.user.UserDtoRequest;
 import com.example.posapplicationapis.dto.user.UserDtoResponse;
 import com.example.posapplicationapis.entities.Image;
 import com.example.posapplicationapis.entities.Role;
+import com.example.posapplicationapis.entities.Session;
 import com.example.posapplicationapis.entities.User;
 import com.example.posapplicationapis.enums.ERole;
 import com.example.posapplicationapis.repositories.ImageRepository;
 import com.example.posapplicationapis.repositories.RoleRepository;
+import com.example.posapplicationapis.repositories.SessionRepository;
 import com.example.posapplicationapis.repositories.UserRepository;
 import com.example.posapplicationapis.service.ImageService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,8 +40,10 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ImageRepository imageRepository;
 
-
-    private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private SessionRepository sessionRepository;
 
     @Override
     @Transactional
@@ -83,8 +89,7 @@ public class UserServiceImpl implements UserService {
             user.setCountry(signUpRequest.getCountry());
             user.setPhoneNumber(signUpRequest.getPhoneNumber());
             user.setPostalCode(signUpRequest.getPostalCode());
-//            user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
-//            user.setImage(signUpRequest.getImage());
+            user.setPassword(passwordEncoder.encode(signUpRequest.getPassword()));
             user.setActive(true); // Assuming new users are active by default
             user.setRoles(roles);
 
@@ -161,7 +166,7 @@ public class UserServiceImpl implements UserService {
         user.setPhoneNumber(userDtoRequest.getPhoneNumber());
         user.setPostalCode(userDtoRequest.getPostalCode());
         // Uncomment if you handle passwords and images
-        // user.setPassword(passwordEncoder.encode(userDtoRequest.getPassword()));
+        user.setPassword(passwordEncoder.encode(userDtoRequest.getPassword()));
         // user.setImage(userDtoRequest.getImage());
         user.setActive(userDtoRequest.getActive());
         user.setRoles(roles);
@@ -190,31 +195,31 @@ public class UserServiceImpl implements UserService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-//
-//    @Override
-//    @Transactional
-//    public String authenticateUser(String username, String password) {
-//        User user = userRepository.findByUsername(username)
-//                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
-//
-//        if (!passwordEncoder.matches(password, user.getPassword())) {
-//            throw new RuntimeException("Invalid credentials");
-//        }
-//
-//        // Generate and return a token (e.g., JWT token)
-//        return "dummy-token"; // Replace with actual token generation logic
-//    }
-//
-//    @Override
-//    @Transactional
-//    public void changeUserPassword(Long id, String newPassword) {
-//        User user = userRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
-//
-//        user.setPassword(passwordEncoder.encode(newPassword)); // Hash new password
-//        userRepository.save(user);
-//    }
-//
+
+    @Override
+    @Transactional
+    public Long authenticateUser(String username, String password) {
+        User user = userRepository.findByName(username)
+                .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid credentials");
+        }
+
+
+        return user.getId();
+    }
+
+    @Override
+    @Transactional
+    public void changeUserPassword(Long id, String newPassword) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
     @Override
     @Transactional
     public void activateUser(Long id) {

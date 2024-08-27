@@ -1,5 +1,6 @@
 package com.example.posapplicationapis.restcontroller.User;
 
+import com.example.posapplicationapis.dto.user.UserAuthDto;
 import com.example.posapplicationapis.dto.user.UserDtoRequest;
 import com.example.posapplicationapis.dto.user.UserDtoResponse;
 import com.example.posapplicationapis.services.user.UserServiceImpl;
@@ -69,4 +70,25 @@ public class UserController {
 
         return ResponseEntity.ok(userService.editUserImage(id, image));
     }
+    @PostMapping("/authenticate")
+    public ResponseEntity<Long> authenticateUser(@RequestBody UserAuthDto userDtoRequest) {
+        try {
+            Long userId = userService.authenticateUser(userDtoRequest.getName(), userDtoRequest.getPassword());
+            return ResponseEntity.ok(userId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(401).build();
+        }
+    }
+
+    @PutMapping("/{id}/change-password")
+    public ResponseEntity<Void> changeUserPassword(@PathVariable Long id, @RequestBody String newPassword) {
+        try {
+            userService.changeUserPassword(id, newPassword);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).build(); // 404 Not Found if user doesn't exist
+        }
+    }
+
+
 }

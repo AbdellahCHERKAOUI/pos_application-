@@ -1,6 +1,7 @@
 package com.example.posapplicationapis.dto.user;
 
 import com.example.posapplicationapis.entities.Role;
+import jakarta.persistence.Column;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,6 +11,7 @@ import java.util.Set;
 @Data
 @Builder
 public class UserDtoRequest {
+    @Column(unique = true)
     private String name;
     private String password;
 
