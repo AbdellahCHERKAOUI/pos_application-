@@ -9,4 +9,5 @@ import java.util.Map;
 public class OrderItemDtoResponse {
     private Long id;
     private Double price;
-    private Map<Long, Integer> productIds;}
+    private Map<Long, Integer> productIds;
+}
