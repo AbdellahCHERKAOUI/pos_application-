@@ -9,7 +9,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Supplement {
+public class  Supplement {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

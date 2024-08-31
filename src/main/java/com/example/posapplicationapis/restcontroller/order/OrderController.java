@@ -1,12 +1,17 @@
 package com.example.posapplicationapis.restcontroller.order;
 
 import com.example.posapplicationapis.dto.ProductIdsDto;
+import com.example.posapplicationapis.dto.order.OrderDateRequest;
 import com.example.posapplicationapis.dto.order.OrderDtoRequest;
 import com.example.posapplicationapis.dto.order.OrderDtoResponse;
+import com.example.posapplicationapis.dto.order.OrderResponseForReceipt;
+import com.example.posapplicationapis.entities.Order;
 import com.example.posapplicationapis.services.order.OrderService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -29,7 +34,13 @@ public class OrderController {
         return ResponseEntity.ok(orderDtoResponse);
     }
 
-    @GetMapping("/get-all-order")
+    @GetMapping("/get-by-user/{userId}")
+    public ResponseEntity<List<OrderDtoResponse>> getOrdersByUserId(@PathVariable Long userId) {
+         List<OrderDtoResponse> orderDtoResponses = orderService.getOrdersByUserId(userId);
+        return ResponseEntity.ok(orderDtoResponses);
+    }
+
+    @GetMapping("/get-all")
     public ResponseEntity<List<OrderDtoResponse>> getAllOrders() {
         List<OrderDtoResponse> orderDtoResponses = orderService.getAllOrders();
         return ResponseEntity.ok(orderDtoResponses);
@@ -65,6 +76,28 @@ public class OrderController {
        OrderDtoResponse updatedOrder = orderService.removeProductsFromOrder(id, productIds.getProductIds());
        return ResponseEntity.ok(updatedOrder);
    }
+
+    @PutMapping("/update-status/{orderId}")
+    public String updateOrderStatus(@RequestParam String orderStatus, @PathVariable Long orderId) {
+        return orderService.updateOrderStatus(orderId, orderStatus);
+    }
+
+    @PutMapping("/pay/{orderId}")
+    public String pay(@PathVariable Long orderId) {
+        return orderService.setPaid(orderId);
+    }
+
+    @GetMapping("/get-products/{orderId}")
+    public OrderResponseForReceipt getProducts(@PathVariable Long orderId) {
+        return orderService.getProducts(orderId);
+    }
+
+    @PostMapping("/get-by-day")
+    public List<OrderDtoResponse> getOrdersByDay(@RequestBody OrderDateRequest orderDateRequest) {
+        LocalDate date = orderDateRequest.getDate().toLocalDate();
+        return orderService.getOrdersByDay(date);
+    }
+
     @PutMapping(value = "/{customerId}/{orderId}")
     public ResponseEntity<OrderDtoResponse> choosediscount(
             @PathVariable Long customerId,

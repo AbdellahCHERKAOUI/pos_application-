@@ -2,7 +2,9 @@ package com.example.posapplicationapis.services.order;
 
 import com.example.posapplicationapis.dto.order.OrderDtoRequest;
 import com.example.posapplicationapis.dto.order.OrderDtoResponse;
+import com.example.posapplicationapis.dto.order.OrderResponseForReceipt;
 import com.example.posapplicationapis.dto.orderItem.OrderItemDtoResponse;
+import com.example.posapplicationapis.dto.product.ProductResponseForOrder;
 import com.example.posapplicationapis.entities.*;
 import com.example.posapplicationapis.enums.OrderStatus;
 import com.example.posapplicationapis.enums.PaymentMethod;
@@ -13,9 +15,9 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -141,8 +143,10 @@ public class OrderServiceImpl implements OrderService{
          order.setTotal(orderItem.getPrice());
          order.setOrderItem(orderItem);
         // Save the order to the database
-        Order savedOrder = orderRepository.save(order);
 
+        order.setDate(LocalDateTime.now());
+        Order savedOrder = orderRepository.save(order);
+        savedOrder.setReceiptNumber(UUID.randomUUID().toString().replace("-", ""));
         // Map the saved order to DTO and return
         return mapToDto(savedOrder);
     }
@@ -374,12 +378,61 @@ public class OrderServiceImpl implements OrderService{
         return mapToDto(updateOrder);
     }
 
+    @Override
+    public List<OrderDtoResponse> getOrdersByUserId(Long userId) {
+        List<Order> orders = orderRepository.findByUserId(userId);
+        List<OrderDtoResponse> orderDtoResponses = new ArrayList<>();
+        for (Order order : orders){
+            orderDtoResponses.add(mapToDto(order));
+        }
+        return orderDtoResponses;
+    }
+
+    @Override
+    public String updateOrderStatus(Long orderId, String orderStatus) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+
+        order.setStatus(OrderStatus.valueOf(orderStatus));
+
+        orderRepository.save(order);
+
+        return orderStatus;
+    }
+
+    @Override
+    public String setPaid(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        Payment payment = new Payment();
+        payment.setPaymentMethod(PaymentMethod.CASH);
+        paymentRepository.save(payment);
+
+        order.setPayment(payment);
+
+        orderRepository.save(order);
+
+        return "cash";
+    }
+
+    @Override
+    public OrderResponseForReceipt getProducts(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        Map<Product, Integer> orderedProducts = order.getOrderItem().getOrderedProduct();
+
+        OrderResponseForReceipt orderResponse = new OrderResponseForReceipt();
 
 
+        Map<ProductResponseForOrder, Integer> productResponseMap = orderedProducts.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> convertToProductResponseForOrder(entry.getKey()),
+                        Map.Entry::getValue
+                ));
 
 
+        orderResponse.setProductAndQuantity(productResponseMap);
 
 
+        return orderResponse;
+    }
 
 
     private OrderDtoResponse mapToDto(Order order) {
@@ -397,6 +450,10 @@ public class OrderServiceImpl implements OrderService{
         orderDtoResponse.setTotal(order.getTotal());
         orderDtoResponse.setStatus(order.getStatus());
         orderDtoResponse.setUserId(order.getUser().getId());
+        if (order.getPayment() !=  null){
+            orderDtoResponse.setPaymentId(order.getPayment().getId());
+        }
+
         orderDtoResponse.setCustomerId(order.getCustomer() != null ? order.getCustomer().getId() : null);
 
         if (order.getOrderItem() != null) {
@@ -418,7 +475,7 @@ public class OrderServiceImpl implements OrderService{
 
     public Order toEntity(OrderDtoRequest orderDtoRequest) {
         Order order = new Order();
-        order.setDate(orderDtoRequest.getDate());
+        order.setDate(LocalDateTime.now());
         order.setReceiptNumber(orderDtoRequest.getReceiptNumber());
         order.setStatus(orderDtoRequest.getStatus());
 
@@ -429,6 +486,21 @@ public class OrderServiceImpl implements OrderService{
 
 
         return order;
+    }
+
+    private static ProductResponseForOrder convertToProductResponseForOrder(Product product) {
+        ProductResponseForOrder response = new ProductResponseForOrder();
+        response.setProductName(product.getName());
+        response.setProductPrice(product.getPrice().intValue()); // Assuming you want to use the 'price' field
+        return response;
+    }
+
+    public List<OrderDtoResponse> getOrdersByDay(LocalDate date) {
+        List<OrderDtoResponse> orderDtoResponses = new ArrayList<>();
+        for(Order order : orderRepository.findOrdersByDay(date)){
+            orderDtoResponses.add(mapToDto(order));
+        }
+        return orderDtoResponses;
     }
 
 }
