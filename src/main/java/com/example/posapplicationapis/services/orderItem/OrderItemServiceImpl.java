@@ -183,6 +183,7 @@ public class OrderItemServiceImpl implements OrderItemService {
      dto.setId(orderItem.getId());
      dto.setPrice(orderItem.getPrice());
 
+
      // Convert the Map<Product, Integer> to a Map<Long, Integer>
      Map<Long, Integer> productIds = orderItem.getOrderedProduct().entrySet().stream()
              .collect(Collectors.toMap(

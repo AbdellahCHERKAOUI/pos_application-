@@ -1,6 +1,7 @@
 package com.example.posapplicationapis.services.reservation;
 
 import com.example.posapplicationapis.dto.reservation.ReservationDtoRequest;
+import com.example.posapplicationapis.dto.reservation.ReservationDtoResponse;
 import com.example.posapplicationapis.entities.*;
 import com.example.posapplicationapis.enums.ERole;
 import com.example.posapplicationapis.enums.TableStatus;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ReservationServiceImpl {
@@ -53,15 +55,12 @@ public class ReservationServiceImpl {
             table.setReserved(TableStatus.RESERVED);
         }
         reservation.setTables(tables);
-
-
         reservationRepository.save(reservation);
-
         return "Reservation created successfully with ID: " + reservation.getId();
     }
 
-    public String cancel(Long clientId, Long cashierId, ReservationDtoRequest reservationDtoRequest) {
 
+    public String cancel(Long clientId, Long cashierId, ReservationDtoRequest reservationDtoRequest) {
         User cashier = userRepository.findById(cashierId)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid cashier ID"));
         for (Role role : cashier.getRoles()) {
@@ -82,6 +81,17 @@ public class ReservationServiceImpl {
         reservationRepository.delete(reservation);
 
         return "Reservation canceled";
+    }
+    public List<ReservationDtoResponse> getAllReservations() {
+        List<Reservation> reservations = reservationRepository.findAll();
+        return reservations.stream().map(reservation -> {
+            ReservationDtoResponse response = new ReservationDtoResponse();
+            response.setId(reservation.getId());
+            response.setDate(reservation.getDate());
+            response.setCustomer(reservation.getCustomer());
+            response.setTables(reservation.getTables().stream().map(table -> table.getId()).collect(Collectors.toList()));
+            return response;
+        }).collect(Collectors.toList());
     }
 
 }

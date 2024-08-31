@@ -5,7 +5,6 @@ import com.example.posapplicationapis.dto.user.UserDtoRequest;
 import com.example.posapplicationapis.dto.user.UserDtoResponse;
 import com.example.posapplicationapis.entities.Image;
 import com.example.posapplicationapis.entities.Role;
-import com.example.posapplicationapis.entities.Session;
 import com.example.posapplicationapis.entities.User;
 import com.example.posapplicationapis.enums.ERole;
 import com.example.posapplicationapis.repositories.ImageRepository;
@@ -15,15 +14,12 @@ import com.example.posapplicationapis.repositories.UserRepository;
 import com.example.posapplicationapis.service.ImageService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 

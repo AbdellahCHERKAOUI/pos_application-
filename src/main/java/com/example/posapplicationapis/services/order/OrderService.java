@@ -24,7 +24,7 @@ public interface OrderService {
 
     String choosePaymentMethod(Long id, String paymentMethod);
 
-    String chooseDiscount(Long orderId, Long customerId);
+    OrderDtoResponse chooseDiscount(Long orderId, Long customerId);
 
 
 }

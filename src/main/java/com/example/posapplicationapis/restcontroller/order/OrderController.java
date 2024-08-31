@@ -50,10 +50,10 @@ public class OrderController {
         return orderService.choosePaymentMethod(id, paymentMethod);
     }
 
-    @PutMapping("{orderId}/discount/{customerId}")
+   /* @PutMapping("{orderId}/discount/{customerId}")
     public String chooseDiscount(@PathVariable Long orderId,@PathVariable Long customerId) {
         return orderService.chooseDiscount(orderId, customerId);
-    }
+    }*/
    /* @PutMapping("/update-order-quantity/{id}")
     public OrderDtoResponse updateOrderQuantity(@PathVariable Long id, @RequestBody OrderDtoRequest orderDtoRequest) {
         return orderService.updateOrderByOrderItem(id, orderDtoRequest);
@@ -65,5 +65,11 @@ public class OrderController {
        OrderDtoResponse updatedOrder = orderService.removeProductsFromOrder(id, productIds.getProductIds());
        return ResponseEntity.ok(updatedOrder);
    }
-
+    @PutMapping(value = "/{customerId}/{orderId}")
+    public ResponseEntity<OrderDtoResponse> choosediscount(
+            @PathVariable Long customerId,
+            @PathVariable Long orderId) {
+        OrderDtoResponse updatedOrder = orderService.chooseDiscount(customerId,orderId);
+        return ResponseEntity.ok(updatedOrder);
+    }
 }

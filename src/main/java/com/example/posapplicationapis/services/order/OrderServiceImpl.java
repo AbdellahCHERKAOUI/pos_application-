@@ -7,6 +7,7 @@ import com.example.posapplicationapis.entities.*;
 import com.example.posapplicationapis.enums.OrderStatus;
 import com.example.posapplicationapis.enums.PaymentMethod;
 import com.example.posapplicationapis.repositories.*;
+import com.example.posapplicationapis.services.orderItem.OrderItemService;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,49 +41,73 @@ public class OrderServiceImpl implements OrderService{
     private ProductRepository productRepository;
     @Autowired
     private CustomerRepository customerRepository;
+    @Autowired
+    private OrderItemService orderItemService;
 
 
     @Override
     public OrderDtoResponse createOrder(OrderDtoRequest orderDtoRequest) {
         // Convert DTO to Entity
         Order order = toEntity(orderDtoRequest);
-
-        // Fetch OrderItem using the provided ID
-        OrderItem orderItem = orderItemRepository.findById(orderDtoRequest.getOrderItemId())
-                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
-
+        OrderItem orderItem = new OrderItem();
+        Map<Product, Integer> orderedProduct = new HashMap<>();
+        for (Map.Entry<Long, Integer> entry : orderDtoRequest.getProductQuantities().entrySet()) {
+            Long productId = entry.getKey();
+            Integer quantity = entry.getValue();
+            // Fetch the product from the repository using the product ID
+            Product product = productRepository.findById(productId).orElse(null);
+            if (product != null) {
+                orderedProduct.put(product, quantity);
+            } else {
+                // Handle the case where the product is not found, if necessary
+                // For example, you could log a warning or throw an exception
+                System.out.println("Product with ID " + productId + " not found.");
+            }
+        }
+        double  totalPrice = 0.0;
+        // Iterate through the map and calculate the total price
+        for (Map.Entry<Product, Integer> entry : orderedProduct.entrySet()) {
+            Product product = entry.getKey();
+            int quantity = entry.getValue();
+            // Calculate the price for the current product
+            double productTotal = product.getPrice() * quantity;
+            // Add to the total price
+            totalPrice = totalPrice + productTotal;
+        }
+        orderItem.setPrice(totalPrice);
+        orderItem.setOrderedProduct(orderedProduct);
+        orderItemsRepository.save(orderItem);
         // Map to store total quantities of each ingredient needed for the order
         Map<Long, Double> totalIngredientQuantities = new HashMap<>();
-
         // Iterate over each product in the order
         for (Map.Entry<Product, Integer> entry : orderItem.getOrderedProduct().entrySet()) {
             Product product = entry.getKey();
             int orderedProductQuantity = entry.getValue();
-
             // Retrieve product ingredients and calculate total quantities needed
             for (ProductIngredient productIngredient : product.getIngredients()) {
                 for (Map.Entry<Ingredient, Double> ingredientEntry : productIngredient.getIngredientQuantities().entrySet()) {
                     Ingredient ingredient = ingredientEntry.getKey();
                     double ingredientQuantity = ingredientEntry.getValue();
-
                     // Calculate total quantity needed for this ingredient
                     double totalQuantity = orderedProductQuantity * ingredientQuantity;
-
                     // Update the map with this ingredient's total quantity
                     totalIngredientQuantities.merge(ingredient.getId(), totalQuantity, Double::sum);
                 }
             }
+        }
+        if (orderDtoRequest.getCustomerId()!= null){
+            Customer customer=customerRepository.findById(orderDtoRequest.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("customer not found for customer ID " + orderDtoRequest.getCustomerId()));
+            order.setCustomer(customer);
         }
 
         // Update stock quantities
         for (Map.Entry<Long, Double> ingredientEntry : totalIngredientQuantities.entrySet()) {
             Long ingredientId = ingredientEntry.getKey();
             double requiredQuantity = ingredientEntry.getValue();
-
             // Fetch the stock for this ingredient
             Stock stock = stockRepository.findByIngredientId(ingredientId)
                     .orElseThrow(() -> new RuntimeException("Stock not found for ingredient ID " + ingredientId));
-
             // Retrieve the current quantity in stock
             Double currentQuantityInStock = null;
             Ingredient matchingIngredient = null;
@@ -112,7 +137,9 @@ public class OrderServiceImpl implements OrderService{
 
             stockRepository.save(stock);
         }
-
+        /*chooseDiscount(order.getId(), customer.getId());*/
+         order.setTotal(orderItem.getPrice());
+         order.setOrderItem(orderItem);
         // Save the order to the database
         Order savedOrder = orderRepository.save(order);
 
@@ -157,7 +184,7 @@ public class OrderServiceImpl implements OrderService{
                 .orElseThrow(() -> new RuntimeException("User not found")));
 
         // Fetch the order item
-        OrderItem orderItem = orderItemsRepository.findById(orderDtoRequest.getOrderItemId())
+        OrderItem orderItem = orderItemsRepository.findById(order.getOrderItem().getId())
                 .orElseThrow(() -> new RuntimeException("OrderItem not found"));
 
         // Update the product quantities in the order item and adjust the stock
@@ -330,7 +357,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     @Override
-    public String chooseDiscount(Long orderId, Long customerId) {
+    public OrderDtoResponse chooseDiscount(Long customerId,Long orderId) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
         Customer customer = customerRepository.findById(customerId).orElseThrow(() -> new RuntimeException("Customer not found"));
         Double total = order.getTotal();
@@ -343,8 +370,8 @@ public class OrderServiceImpl implements OrderService{
                 break;
         }
         order.setCustomer(customer);
-        orderRepository.save(order);
-        return customer.getRemise().toString();
+        Order updateOrder= orderRepository.save(order);
+        return mapToDto(updateOrder);
     }
 
 
@@ -359,6 +386,13 @@ public class OrderServiceImpl implements OrderService{
         OrderDtoResponse orderDtoResponse = new OrderDtoResponse();
         orderDtoResponse.setId(order.getId());
         orderDtoResponse.setDate(order.getDate());
+        OrderItemDtoResponse orderItemDtoResponse = new OrderItemDtoResponse();
+        OrderItem orderItem = order.getOrderItem();
+/*
+        orderItemDtoResponse.setId(orderItem.getId());
+*/
+        /*orderItemDtoResponse.setPrice(orderItem.getPrice());*/
+        orderDtoResponse.setOrderItem(orderItemDtoResponse);
         orderDtoResponse.setReceiptNumber(order.getReceiptNumber());
         orderDtoResponse.setTotal(order.getTotal());
         orderDtoResponse.setStatus(order.getStatus());
@@ -392,11 +426,7 @@ public class OrderServiceImpl implements OrderService{
                 .orElseThrow(() -> new RuntimeException("User not found"));
         order.setUser(user);
 
-        OrderItem orderItem = orderItemsRepository.findById(orderDtoRequest.getOrderItemId())
-                .orElseThrow(() -> new RuntimeException("OrderItem not found"));
-        order.setOrderItem(orderItem);
 
-        order.setTotal(orderItem.getPrice());
 
         return order;
     }

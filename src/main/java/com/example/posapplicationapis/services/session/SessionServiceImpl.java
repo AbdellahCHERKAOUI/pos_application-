@@ -161,7 +161,9 @@ public class SessionServiceImpl implements SessionService {
         CategoryDtoResponse categoryDto = new CategoryDtoResponse();
         categoryDto.setId(category.getId());
         categoryDto.setName(category.getName());
-        categoryDto.setImageLink(category.getImage().getLink());
+        if (category.getImage() != null){
+            categoryDto.setImageLink(category.getImage().getLink());
+        }
         return categoryDto;
     }
 }

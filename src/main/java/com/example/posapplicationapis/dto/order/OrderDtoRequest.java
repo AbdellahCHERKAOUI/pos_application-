@@ -1,5 +1,6 @@
 package com.example.posapplicationapis.dto.order;
 
+import com.example.posapplicationapis.dto.orderItem.OrderItemDtoRequest;
 import com.example.posapplicationapis.enums.OrderStatus;
 import lombok.Data;
 
@@ -16,9 +17,7 @@ public class OrderDtoRequest {
     private Long paymentId;
     private Long userId;
     private Long customerId;
-    private Long orderItemId;
     private Map<Long, Integer> productQuantities;
     private List<Long> productIdsToRemove;
-
 
 }

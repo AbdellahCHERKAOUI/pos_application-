@@ -1,6 +1,7 @@
 package com.example.posapplicationapis.restcontroller.reservation;
 
 import com.example.posapplicationapis.dto.reservation.ReservationDtoRequest;
+import com.example.posapplicationapis.dto.reservation.ReservationDtoResponse;
 import com.example.posapplicationapis.entities.Cashier;
 import com.example.posapplicationapis.entities.Customer;
 import com.example.posapplicationapis.entities.Reservation;
@@ -11,11 +12,7 @@ import com.example.posapplicationapis.repositories.ReservationRepository;
 import com.example.posapplicationapis.repositories.TableRepository;
 import com.example.posapplicationapis.services.reservation.ReservationServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,5 +36,9 @@ public class ReservationController {
                                   @PathVariable Long cashierId,
                                   @RequestBody ReservationDtoRequest reservationDtoRequest) {
         return reservationService.cancel(clientId,cashierId,reservationDtoRequest);
+    }
+    @GetMapping("/get-all-reservations")
+    public List<ReservationDtoResponse> getAllReservations() {
+        return reservationService.getAllReservations();
     }
 }
