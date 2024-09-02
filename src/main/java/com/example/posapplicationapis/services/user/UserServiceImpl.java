@@ -156,14 +156,12 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
         user.setName(userDtoRequest.getName());
-        user.setPassword(userDtoRequest.getPassword());
         user.setCity(userDtoRequest.getCity());
         user.setAddress(userDtoRequest.getAddress());
         user.setCountry(userDtoRequest.getCountry());
         user.setPhoneNumber(userDtoRequest.getPhoneNumber());
         user.setPostalCode(userDtoRequest.getPostalCode());
         // Uncomment if you handle passwords and images
-        user.setPassword(passwordEncoder.encode(userDtoRequest.getPassword()));
         // user.setImage(userDtoRequest.getImage());
         user.setActive(userDtoRequest.getActive());
         user.setRoles(roles);
